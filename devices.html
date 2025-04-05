@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Devices</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e0eafc);
+      color: #333;
+    }
+    .navbar {
+      background-color: #2c3e50;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .nav-link:hover {
+      color: #1abc9c !important;
+    }
+    .card {
+      border: none;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    .device-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #ddd;
+    }
+    .device-row:last-child {
+      border-bottom: none;
+    }
+  
+.device-card {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.2rem; margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.delete-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 14px;
+  font-weight: 500;
+}
+.delete-btn:hover {
+  color: #e74c3c;
+}
+
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">🔌 Devices</a>
+    <div>
+      <ul class="navbar-nav d-flex flex-row gap-3">
+
+        <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link active" href="Devices.html">Devices</a></li>
+        <li class="nav-item"><a class="nav-link" href="Reports.html">Reports</a></li>
+        <li class="nav-item"><a class="nav-link" href="Recommendations.html">Recommendations</a></li>  <!-- Account Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle"></i> Account
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+            <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
+            <li><a class="dropdown-item" href="#">🔓 Sign Out</a></li>
+          </ul>
+        </li>
+      </ul>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card p-4">
+        <h5 class="mb-3">➕ Add a New Device</h5>
+        
+    <form id="deviceForm">
+      <div class="mb-3">
+        <label class="form-label">Choose a Device (Auto-fill)</label>
+        <select class="form-select" id="deviceSelect">
+          <option value="">-- Select --</option>
+          <option value="Heater">Heater</option>
+          <option value="Kettle">Kettle</option>
+          <option value="Microwave">Microwave</option>
+          <option value="Fridge">Fridge</option>
+          <option value="Laptop">Laptop</option>
+        </select>
+      </div>
+    
+          <div class="mb-3">
+            <label class="form-label">Device Name</label>
+            <input type="text" class="form-control" placeholder="e.g., Heater">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Power Rating (W)</label>
+            <input type="number" class="form-control" placeholder="e.g., 1500">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Usage (hrs/day)</label>
+            <input type="number" class="form-control" placeholder="e.g., 4">
+<div class="mb-3">
+  <label class="form-label">Usage Pattern</label>
+  <select class="form-select" id="usagePattern">
+    <option value="Always On">🔁 Always On</option>
+    <option value="Standby">💤 Standby</option>
+    <option value="Intermittent">⏱️ Intermittent</option>
+  </select>
+</div>
+
+          </div>
+          <button type="submit" class="btn btn-success w-100">Add Device</button>
+        
+<div class="mt-3">
+  <p class="mb-1 fw-semibold">💸 Estimated Monthly Cost: <span id="costEstimate">£0.00</span></p>
+  <p class="mb-1 text-muted small">🌍 Estimated CO₂ Output: <span id="carbonEstimate">0.00</span> kg/month</p>
+</div>
+
+</form>
+
+<div class="card mt-4 p-3">
+  <h6 class="fw-semibold mb-2">🧠 Energy Tips for Adding Devices</h6>
+  <ul class="text-muted small mb-0 ps-3">
+    <li>💡 Enter real usage hours to get accurate results.</li>
+    <li>📏 Estimate how long each device runs per day.</li>
+    <li>🔌 Include only appliances you use frequently.</li>
+    <li>✅ You can always edit or remove devices later!</li>
+  </ul>
+</div>
+
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card p-4">
+        
+    
+    <h4 class="fw-bold mb-1">🧾 Manage Your Devices</h4>
+    <p class="text-muted mb-3">Add, search, and remove appliances to monitor energy usage efficiently.</p>
+    <input type="text" id="deviceSearch" class="form-control mb-3" placeholder="🔍 Search devices...">
+    <select id="sortDevices" class="form-select mb-3">
+      <option value="">Sort by...</option>
+      <option value="name">Name (A-Z)</option>
+      <option value="power">Power Rating</option>
+      <option value="usage">Usage Hours</option>
+    </select>
+    
+    <input type="text" id="deviceSearch" class="form-control mb-3" placeholder="🔍 Search devices...">
+    <select id="sortDevices" class="form-select mb-3">
+      <option value="">Sort by...</option>
+      <option value="name">Name (A-Z)</option>
+      <option value="power">Power Rating</option>
+      <option value="usage">Usage Hours</option>
+    </select>
+    
+        <div class="device-card">
+          <div>
+            <strong>Heater</strong><br><span class='badge bg-light text-dark'>💤 Standby</span><br>
+            <small>1500W • 4 hrs/day</small>
+          </div>
+          <button class="btn btn-outline-danger btn-sm">Delete</button>
+        </div>
+        <div class="device-card">
+          <div>
+            <strong>Kettle</strong><br><span class='badge bg-light text-dark'>⏱️ Intermittent</span><br>
+            <small>1000W • 2 hrs/day</small>
+          </div>
+          <button class="btn btn-outline-danger btn-sm">Delete</button>
+        </div>
+        <div class="device-card">
+          <div>
+            <strong>Microwave</strong><br><span class='badge bg-light text-dark'>🔁 Always On</span><br>
+            <small>1200W • 0.5 hrs/day</small>
+          </div>
+          <button class="btn btn-outline-danger btn-sm">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("deviceSearch").addEventListener("keyup", function() {
+    let filter = this.value.toLowerCase();
+    document.querySelectorAll(".device-row").forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
+    });
+  });
+
+  document.getElementById("sortDevices").addEventListener("change", function() {
+    const container = document.querySelector(".card.p-4 .device-row").parentElement;
+    const rows = Array.from(container.querySelectorAll(".device-row"));
+    const value = this.value;
+
+    rows.sort((a, b) => {
+      const getVal = (row, key) => {
+        const text = row.querySelector("small").textContent;
+        const match = key === 'power' ? /(\d+)W/ : /(\d+\.?\d*) hrs/;
+        return key === 'name' ? row.querySelector("strong").textContent.toLowerCase() : parseFloat(text.match(match)[1]);
+      };
+      const aVal = getVal(a, value);
+      const bVal = getVal(b, value);
+      return aVal > bVal ? 1 : -1;
+    });
+
+    rows.forEach(row => container.appendChild(row));
+  });
+</script>
+
+<script>
+  const deviceData = {
+    "Heater": 1500,
+    "Kettle": 1000,
+    "Microwave": 1200,
+    "Fridge": 200,
+    "Laptop": 60
+  };
+
+  document.getElementById("deviceSelect").addEventListener("change", function() {
+    const device = this.value;
+    if (device && deviceData[device]) {
+      document.querySelector("input[placeholder='e.g., Heater']").value = device;
+      document.querySelector("input[placeholder='e.g., 1500']").value = deviceData[device];
+    }
+  });
+
+  const costRate = 0.34; // £/kWh
+  const carbonRate = 0.233; // kg CO2 per kWh (UK average)
+
+  document.getElementById("deviceForm").addEventListener("input", () => {
+    const power = parseFloat(document.querySelector("input[placeholder='e.g., 1500']").value);
+    const hours = parseFloat(document.querySelector("input[placeholder='e.g., 4']").value);
+    if (!isNaN(power) && !isNaN(hours)) {
+      const kWhPerMonth = (power * hours * 30) / 1000;
+      const cost = kWhPerMonth * costRate;
+      const carbon = kWhPerMonth * carbonRate;
+
+      document.getElementById("costEstimate").textContent = "£" + cost.toFixed(2);
+      document.getElementById("carbonEstimate").textContent = carbon.toFixed(2);
+    }
+  });
+</script>
+</body>
+</html>
+
+
