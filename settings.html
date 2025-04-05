@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,6 +39,47 @@
             background-color: #1abc9c;
             color: white;
         }
+
+        /* Hamburger Menu Icon */
+        .navbar-toggler-icon {
+            background-color: white; /* White color for hamburger lines */
+            width: 30px; /* Adjust width */
+            height: 3px; /* Height of each line */
+            position: relative;
+            transition: 0.3s ease;
+        }
+
+        .navbar-toggler-icon::before,
+        .navbar-toggler-icon::after {
+            content: '';
+            display: block;
+            position: absolute;
+            width: 30px;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: 0.3s ease;
+        }
+
+        .navbar-toggler-icon::before {
+            top: -8px;
+        }
+
+        .navbar-toggler-icon::after {
+            top: 8px;
+        }
+
+        .navbar-toggler {
+            border: none; /* Remove the border */
+            background: transparent; /* Transparent background */
+        }
+
+        /* Navbar Toggler button for smaller screens */
+        @media (max-width: 768px) {
+            .navbar-toggler-icon {
+                background-color: white; /* Ensure white hamburger icon */
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -48,10 +88,14 @@
 
 <nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">⚡ Energy Dashboard</a>
-    <div>
-      <ul class="navbar-nav d-flex flex-row gap-3 align-items-center ms-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
+    <!-- Replaced ⚡ Energy Dashboard with ⚙️ Settings -->
+    <a class="navbar-brand" href="#">⚙️ Settings</a>
+    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav gap-3">
+        <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li> <!-- Updated link to 'Settings' -->
         <li class="nav-item"><a class="nav-link" href="devices.html">Devices</a></li>
         <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
         <li class="nav-item"><a class="nav-link" href="recommendations.html">Recommendations</a></li>
