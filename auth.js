@@ -46,7 +46,7 @@ if (signOutBtn) {
   signOutBtn.addEventListener("click", () => {
     signOut(auth).then(() => {
       alert("👋 Signed out!");
-      window.location.href = "login.html";
+      window.location.href = "signup.html";
     });
   });
 }
