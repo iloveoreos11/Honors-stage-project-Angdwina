@@ -3,6 +3,7 @@
 <head>
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="save-device.js"></script>
+  <script type="module" src="load-devices.js"></script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -68,6 +69,7 @@
       border-radius: 16px;
       padding: 1rem;
       margin-bottom: 1.2rem;
+      margin-top: 0.5rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       display: flex;
       justify-content: space-between;
@@ -122,7 +124,7 @@
 <div class="container py-5">
   <div class="row g-4">
     <div class="col-md-6">
-      <div class="card p-4">
+      <div class="card p-4" id="formCard">
         <h5 class="mb-3">➕ Add a New Device</h5>
         <form id="deviceForm">
           <div class="mb-3">
@@ -162,7 +164,7 @@
     </div>
 
     <div class="col-md-6">
-      <div class="card p-4" id="manageDevices">
+      <div class="card p-4" id="deviceCardContainer">
         <h4 class="fw-bold mb-1">🧾 Manage Your Devices</h4>
         <p class="text-muted mb-3">Add, search, and remove appliances to monitor energy usage efficiently.</p>
         <input type="text" id="deviceSearch" class="form-control mb-3" placeholder="🔍 Search devices...">
@@ -172,19 +174,26 @@
           <option value="power">Power Rating</option>
           <option value="usage">Usage Hours</option>
         </select>
-
-        <!-- Devices will be inserted here dynamically -->
+        <!-- User devices will appear here -->
       </div>
     </div>
   </div>
 </div>
 
-<script type="module" src="firebase-config.js"></script>
-<script type="module" src="save-device.js"></script>
-<script type="module" src="load-devices.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 <footer>
   2025 © Energy Dashboard Limited
 </footer>
+<script type="module">
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { auth } from './firebase-config.js';
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "signup.html"; // redirect to signup if not logged in
+    }
+  });
+</script>
 </body>
 </html>
