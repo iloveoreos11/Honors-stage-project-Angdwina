@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="save-device.js"></script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -111,13 +112,16 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
             <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
-            <li><a class="dropdown-item" href="#">🔓 Sign Out</a></li>
+            <li><a class="dropdown-item" href="#" id="signOutBtn">🔓 Sign Out</a></li>
           </ul>
         </li>
       </ul>
     </div>
   </div>
 </nav>
+
+<!-- rest of your code continues here -->
+
 
 <div class="container py-5">
   <div class="row g-4">
@@ -262,6 +266,7 @@ document.getElementById("deviceForm").addEventListener("input", () => {
     }
   });
 </script>
+<script type="module" src="load-devices.js"></script>
 
 </body>
 </html>
