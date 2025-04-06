@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script type="module" src="firebase-config.js"></script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Your Device Report</title>
@@ -321,6 +323,16 @@
 <footer>
   2025 ©  Energy Dashboard Limited
 </footer>
+<script type="module">
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { auth } from './firebase-config.js';
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "signup.html"; // redirect to signup if not logged in
+    }
+  });
+</script>
 
 </body>
 </html>
