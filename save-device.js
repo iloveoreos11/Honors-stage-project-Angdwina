@@ -1,34 +1,59 @@
-// save-device.js
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { app } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
+import { collection, addDoc, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-const db = getFirestore(app);
-const auth = getAuth(app);
+const form = document.getElementById("deviceForm");
+const deviceContainer = document.querySelector(".col-md-6 .card.p-4");
 
-document.getElementById("deviceForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const userDevicesRef = collection(db, "devices");
 
-  const name = document.getElementById("deviceName").value;
-  const power = parseFloat(document.getElementById("devicePower").value);
-  const usage = parseFloat(document.getElementById("deviceUsage").value);
-  const pattern = document.getElementById("usagePattern").value;
+    // Load user's devices
+    const q = query(userDevicesRef, where("userId", "==", user.uid));
+    onSnapshot(q, (snapshot) => {
+      const existingCards = deviceContainer.querySelectorAll(".device-card");
+      existingCards.forEach(card => card.remove());
 
-  const user = auth.currentUser;
-  if (!user) return alert("You must be logged in!");
+      snapshot.forEach(doc => {
+        const d = doc.data();
 
-  try {
-    await addDoc(collection(db, "users", user.uid, "devices"), {
-      name,
-      power,
-      usage,
-      pattern,
-      createdAt: serverTimestamp()
+        const card = document.createElement("div");
+        card.className = "device-card";
+        card.innerHTML = `
+          <div>
+            <strong>${d.name}</strong><br>
+            <span class='badge bg-light text-dark'>${d.pattern}</span><br>
+            <small>${d.power}W • ${d.hours} hrs/day</small>
+          </div>
+          <button class="btn btn-outline-danger btn-sm">Delete</button>
+        `;
+        deviceContainer.appendChild(card);
+      });
     });
 
-    alert("✅ Device saved successfully!");
-    document.getElementById("deviceForm").reset();
-  } catch (err) {
-    alert("Error saving device: " + err.message);
+    // Handle device save
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("deviceName").value;
+      const power = parseInt(document.getElementById("devicePower").value);
+      const hours = parseFloat(document.getElementById("deviceUsage").value);
+      const pattern = document.getElementById("usagePattern").value;
+
+      if (!name || isNaN(power) || isNaN(hours)) return;
+
+      try {
+        await addDoc(userDevicesRef, {
+          name,
+          power,
+          hours,
+          pattern,
+          userId: user.uid
+        });
+        form.reset();
+      } catch (error) {
+        alert("Error saving device: " + error.message);
+      }
+    });
   }
 });
