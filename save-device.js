@@ -1,5 +1,6 @@
+// save-device.js
 import { db, auth } from './firebase-config.js';
-import { collection, addDoc, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { collection, addDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const form = document.getElementById("deviceForm");
@@ -9,46 +10,42 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     const userDevicesRef = collection(db, "devices");
 
-    // Load user's devices
-    const q = query(userDevicesRef, where("userId", "==", user.uid));
+    const q = query(userDevicesRef, where("uid", "==", user.uid));
     onSnapshot(q, (snapshot) => {
       const existingCards = deviceContainer.querySelectorAll(".device-card");
       existingCards.forEach(card => card.remove());
 
       snapshot.forEach(doc => {
         const d = doc.data();
-
         const card = document.createElement("div");
         card.className = "device-card";
         card.innerHTML = `
           <div>
-            <strong>${d.name}</strong><br>
-            <span class='badge bg-light text-dark'>${d.pattern}</span><br>
-            <small>${d.power}W • ${d.hours} hrs/day</small>
+            <strong>${d.deviceName}</strong><br>
+            <span class='badge bg-light text-dark'>${getEmoji(d.usagePattern)} ${d.usagePattern}</span><br>
+            <small>${d.devicePower}W • ${d.deviceUsage} hrs/day</small>
           </div>
-          <button class="btn btn-outline-danger btn-sm">Delete</button>
         `;
         deviceContainer.appendChild(card);
       });
     });
 
-    // Handle device save
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const name = document.getElementById("deviceName").value;
-      const power = parseInt(document.getElementById("devicePower").value);
-      const hours = parseFloat(document.getElementById("deviceUsage").value);
-      const pattern = document.getElementById("usagePattern").value;
+      const deviceName = document.getElementById("deviceName").value;
+      const devicePower = parseInt(document.getElementById("devicePower").value);
+      const deviceUsage = parseFloat(document.getElementById("deviceUsage").value);
+      const usagePattern = document.getElementById("usagePattern").value;
 
-      if (!name || isNaN(power) || isNaN(hours)) return;
+      if (!deviceName || isNaN(devicePower) || isNaN(deviceUsage)) return;
 
       try {
         await addDoc(userDevicesRef, {
-          name,
-          power,
-          hours,
-          pattern,
-          userId: user.uid
+          uid: user.uid,
+          deviceName,
+          devicePower,
+          deviceUsage,
+          usagePattern
         });
         form.reset();
       } catch (error) {
@@ -57,3 +54,14 @@ onAuthStateChanged(auth, (user) => {
     });
   }
 });
+
+function getEmoji(pattern) {
+  switch (pattern) {
+    case "Always On": return "🔁";
+    case "Standby": return "💤";
+    case "Intermittent": return "⏱️";
+    case "Occasional": return "🕓";
+    case "Seasonal": return "❄️";
+    default: return "⚡";
+  }
+}
