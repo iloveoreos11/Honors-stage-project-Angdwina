@@ -150,6 +150,28 @@
   <!-- Firebase Auth & Config -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="auth.js"></script>
-
+  <script>
+    // Handle switching between Sign Up and Sign In views
+    const signupSection = document.getElementById("signupSection");
+    const signinSection = document.getElementById("signinSection");
+  
+    const showSigninBtn = document.getElementById("showSignin");
+    const showSignupBtn = document.getElementById("showSignup");
+  
+    if (showSigninBtn && showSignupBtn) {
+      showSigninBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        signupSection.style.display = "none";
+        signinSection.style.display = "block";
+      });
+  
+      showSignupBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        signinSection.style.display = "none";
+        signupSection.style.display = "block";
+      });
+    }
+  </script>
+  
 </body>
 </html>
