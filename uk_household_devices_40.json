@@ -1,0 +1,282 @@
+[
+    {
+        "device": "Refrigerator-Freezer",
+        "category": "Kitchen Appliances",
+        "power_w": 225,
+        "usage_hrs_per_day": 24,
+        "pattern": "Always On"
+    },
+    {
+        "device": "Microwave Oven",
+        "category": "Kitchen Appliances",
+        "power_w": 1000,
+        "usage_hrs_per_day": 0.25,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Electric Kettle",
+        "category": "Kitchen Appliances",
+        "power_w": 2500,
+        "usage_hrs_per_day": 0.17,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Toaster",
+        "category": "Kitchen Appliances",
+        "power_w": 1200,
+        "usage_hrs_per_day": 0.08,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Dishwasher",
+        "category": "Kitchen Appliances",
+        "power_w": 1350,
+        "usage_hrs_per_day": 1,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Electric Oven",
+        "category": "Kitchen Appliances",
+        "power_w": 2100,
+        "usage_hrs_per_day": 1,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Electric Hob",
+        "category": "Kitchen Appliances",
+        "power_w": 1750,
+        "usage_hrs_per_day": 1,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Slow Cooker",
+        "category": "Kitchen Appliances",
+        "power_w": 225,
+        "usage_hrs_per_day": 0.71,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Blender",
+        "category": "Kitchen Appliances",
+        "power_w": 550,
+        "usage_hrs_per_day": 0.08,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Coffee Maker",
+        "category": "Kitchen Appliances",
+        "power_w": 1000,
+        "usage_hrs_per_day": 0.17,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Food Processor",
+        "category": "Kitchen Appliances",
+        "power_w": 550,
+        "usage_hrs_per_day": 0.17,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Rice Cooker",
+        "category": "Kitchen Appliances",
+        "power_w": 600,
+        "usage_hrs_per_day": 0.5,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Electric Grill",
+        "category": "Kitchen Appliances",
+        "power_w": 1750,
+        "usage_hrs_per_day": 0.07,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Deep Fryer",
+        "category": "Kitchen Appliances",
+        "power_w": 1750,
+        "usage_hrs_per_day": 0.07,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Juicer",
+        "category": "Kitchen Appliances",
+        "power_w": 450,
+        "usage_hrs_per_day": 0.17,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Hand Mixer",
+        "category": "Kitchen Appliances",
+        "power_w": 200,
+        "usage_hrs_per_day": 0.17,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Ice Cream Maker",
+        "category": "Kitchen Appliances",
+        "power_w": 175,
+        "usage_hrs_per_day": 0.03,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Electric Can Opener",
+        "category": "Kitchen Appliances",
+        "power_w": 125,
+        "usage_hrs_per_day": 0.01,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Electric Knife",
+        "category": "Kitchen Appliances",
+        "power_w": 150,
+        "usage_hrs_per_day": 0.01,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Waffle Iron",
+        "category": "Kitchen Appliances",
+        "power_w": 1000,
+        "usage_hrs_per_day": 0.02,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Washing Machine",
+        "category": "Laundry Appliances",
+        "power_w": 2250,
+        "usage_hrs_per_day": 1,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Tumble Dryer",
+        "category": "Laundry Appliances",
+        "power_w": 2750,
+        "usage_hrs_per_day": 1,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Iron",
+        "category": "Laundry Appliances",
+        "power_w": 1400,
+        "usage_hrs_per_day": 0.14,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Steam Press",
+        "category": "Laundry Appliances",
+        "power_w": 1350,
+        "usage_hrs_per_day": 0.14,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Clothes Steamer",
+        "category": "Laundry Appliances",
+        "power_w": 1650,
+        "usage_hrs_per_day": 0.07,
+        "pattern": "Occasional"
+    },
+    {
+        "device": "Electric Heater",
+        "category": "Heating & Cooling",
+        "power_w": 2250,
+        "usage_hrs_per_day": 3,
+        "pattern": "Seasonal"
+    },
+    {
+        "device": "Oil-Filled Radiator",
+        "category": "Heating & Cooling",
+        "power_w": 2000,
+        "usage_hrs_per_day": 4,
+        "pattern": "Seasonal"
+    },
+    {
+        "device": "Convector Heater",
+        "category": "Heating & Cooling",
+        "power_w": 2250,
+        "usage_hrs_per_day": 3,
+        "pattern": "Seasonal"
+    },
+    {
+        "device": "Storage Heater",
+        "category": "Heating & Cooling",
+        "power_w": 2500,
+        "usage_hrs_per_day": 7,
+        "pattern": "Seasonal"
+    },
+    {
+        "device": "Electric Blanket",
+        "category": "Heating & Cooling",
+        "power_w": 80,
+        "usage_hrs_per_day": 8,
+        "pattern": "Seasonal"
+    },
+    {
+        "device": "Television",
+        "category": "Entertainment & Office",
+        "power_w": 100,
+        "usage_hrs_per_day": 4,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Set-Top Box",
+        "category": "Entertainment & Office",
+        "power_w": 20,
+        "usage_hrs_per_day": 4,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Game Console",
+        "category": "Entertainment & Office",
+        "power_w": 150,
+        "usage_hrs_per_day": 2,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Desktop Computer",
+        "category": "Entertainment & Office",
+        "power_w": 225,
+        "usage_hrs_per_day": 8,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Laptop Computer",
+        "category": "Entertainment & Office",
+        "power_w": 75,
+        "usage_hrs_per_day": 8,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "LED Light Bulb",
+        "category": "Lighting",
+        "power_w": 10,
+        "usage_hrs_per_day": 5,
+        "pattern": "Always On"
+    },
+    {
+        "device": "Desk Lamp",
+        "category": "Lighting",
+        "power_w": 15,
+        "usage_hrs_per_day": 3,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Floor Lamp",
+        "category": "Lighting",
+        "power_w": 20,
+        "usage_hrs_per_day": 4,
+        "pattern": "Intermittent"
+    },
+    {
+        "device": "Smart Bulb",
+        "category": "Lighting",
+        "power_w": 10,
+        "usage_hrs_per_day": 5,
+        "pattern": "Always On"
+    },
+    {
+        "device": "Night Light",
+        "category": "Lighting",
+        "power_w": 5,
+        "usage_hrs_per_day": 8,
+        "pattern": "Always On"
+    }
+]
