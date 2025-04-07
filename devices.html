@@ -1,177 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="save-device.js"></script>
-
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Devices</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    /* Your styles here */
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Your Devices</title>
+
+  <!-- Your CSS (adjust if needed) -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
 </head>
 <body>
+  <div class="container py-5">
+    <h1 class="mb-4">🧾 Manage Your Devices</h1>
 
-<nav class="navbar navbar-expand-lg">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">⚡ Energy Dashboard</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav gap-3">
-        <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link active" href="devices.html">Devices</a></li>
-        <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
-        <li class="nav-item"><a class="nav-link" href="recommendations.html">Recommendations</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-user-circle"></i> Account
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-            <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
-            <li><a class="dropdown-item" href="#" id="signOutBtn">🔓 Sign Out</a></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+    <!-- Device Form -->
+    <form id="deviceForm" class="mb-4">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" id="deviceName" name="deviceName" class="form-control" placeholder="Device Name" autocomplete="on" required />
+        </div>
+        <div class="col-md-3">
+          <input type="number" id="devicePower" name="devicePower" class="form-control" placeholder="Power (W)" required />
+        </div>
+        <div class="col-md-3">
+          <input type="number" step="0.1" id="deviceUsage" name="deviceUsage" class="form-control" placeholder="Usage (hrs/day)" required />
+        </div>
+        <div class="col-md-2">
+          <select id="usagePattern" name="usagePattern" class="form-select" required>
+            <option value="Always On">Always On</option>
+            <option value="Standby">Standby</option>
+            <option value="Intermittent">Intermittent</option>
+            <option value="Occasional">Occasional</option>
+            <option value="Seasonal">Seasonal</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-3 text-end">
+        <button type="submit" class="btn btn-primary">Save Device</button>
+      </div>
+    </form>
+
+    <!-- Device Cards -->
+    <div id="deviceCardContainer" class="row row-cols-1 row-cols-md-2 g-4"></div>
   </div>
-</nav>
 
-<div class="container py-5">
-  <div class="row g-4">
-    <div class="col-md-6 order-md-2">
-      <div class="card p-4" id="deviceCardContainer">
-        <h4 class="fw-bold mb-1">🧾 Manage Your Devices</h4>
-        <p class="text-muted mb-3">Add, search, and remove appliances to monitor energy usage efficiently.</p>
-        <input type="text" id="deviceSearch" class="form-control mb-3" placeholder="🔍 Search devices...">
-        <select id="sortDevices" class="form-select mb-3">
-          <option value="">Sort by...</option>
-          <option value="name">Name (A-Z)</option>
-          <option value="power">Power Rating</option>
-          <option value="usage">Usage Hours</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="col-md-6 order-md-1">
-      <div class="card p-4" id="formCard">
-        <h5 class="mb-3">➕ Add a New Device</h5>
-        <form id="deviceForm">
-          <div class="mb-3">
-            <label class="form-label">Choose a Device (Auto-fill)</label>
-            <input type="text" class="form-control" id="deviceSearchInput" placeholder="Start typing device name..." autocomplete="off">
-            <ul class="list-group mt-1" id="autocompleteList" style="max-height: 200px; overflow-y: auto;"></ul>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Device Name</label>
-            <input type="text" class="form-control" id="deviceName" placeholder="e.g., Heater">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Power Rating (W)</label>
-            <input type="number" class="form-control" id="devicePower" placeholder="e.g., 1500">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Usage (hrs/day)</label>
-            <input type="number" class="form-control" id="deviceUsage" placeholder="e.g., 4">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Usage Pattern</label>
-            <select class="form-select" id="usagePattern">
-              <option value="Always On">🔁 Always On</option>
-              <option value="Standby">💤 Standby</option>
-              <option value="Intermittent">⏱️ Intermittent</option>
-              <option value="Occasional">🕓 Occasional</option>
-              <option value="Seasonal">❄️ Seasonal</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-success w-100">Add Device</button>
-          <div class="mt-3">
-            <p class="mb-1 fw-semibold">💸 Estimated Monthly Cost: <span id="costEstimate">£0.00</span></p>
-            <p class="mb-1 text-muted small">🌍 Estimated CO₂ Output: <span id="carbonEstimate">0.00</span> kg/month</p>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-<footer>
-  2025 © Energy Dashboard Limited
-</footer>
-<script type="module">
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { db, auth } from './firebase-config.js';
-  import { doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-  let costPerKwh = 0.34;  // Default value
-  let carbonIntensity = 0.233;  // Default value
-
-  // Get user's cost per kWh and carbon intensity from Firestore
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        costPerKwh = userData.costPerKwh || costPerKwh;
-        carbonIntensity = userData.carbonIntensity || carbonIntensity;
-
-        console.log(`Cost per kWh: £${costPerKwh}, Carbon Intensity: ${carbonIntensity} kg/kWh`);
-      } else {
-        console.log("No user data found!");
-      }
-
-      fetchAndCalculateDevices(user.uid);
-    } else {
-      window.location.href = "signup.html"; // Redirect to sign-up page if user is not authenticated
-    }
-  });
-
-  // Fetch devices and calculate their monthly cost and CO2 output
-  async function fetchAndCalculateDevices(userId) {
-    const devicesRef = collection(db, "devices");
-    const q = query(devicesRef, where("userId", "==", userId));
-    const deviceSnapshot = await getDocs(q);
-
-    deviceSnapshot.forEach(doc => {
-      const deviceData = doc.data();
-      const deviceName = deviceData.deviceName;
-      const devicePower = deviceData.devicePower;
-      const deviceUsage = deviceData.deviceUsage;
-
-      // Calculate the monthly kWh usage
-      const kWhPerMonth = (devicePower * deviceUsage * 30) / 1000;  // 30 days in a month
-
-      // Calculate monthly cost and CO2 emissions
-      const monthlyCost = kWhPerMonth * costPerKwh;
-      const monthlyCO2 = kWhPerMonth * carbonIntensity;
-
-      displayDevice(deviceName, monthlyCost, monthlyCO2);
-    });
-  }
-
-  // Display the device with calculated cost and CO2 output
-  function displayDevice(deviceName, cost, co2) {
-    const deviceContainer = document.getElementById("deviceCardContainer");
-    const deviceCard = document.createElement("div");
-    deviceCard.className = "device-card";
-    deviceCard.innerHTML = `
-      <div>
-        <strong>${deviceName}</strong><br>
-        <p>💸 Estimated Monthly Cost: £${cost.toFixed(2)}</p>
-        <p>🌍 Estimated CO₂ Output: ${co2.toFixed(2)} kg/month</p>
-      </div>
-    `;
-    deviceContainer.appendChild(deviceCard);
-  }
-</script>
+  <!-- Your Firebase device logic -->
+  <script type="module" src="save-device.js"></script>
 </body>
 </html>
