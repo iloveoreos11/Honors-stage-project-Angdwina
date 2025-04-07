@@ -97,6 +97,9 @@
         </tr>
       </tfoot>
     </table>
+
+    <!-- Insights -->
+    <div id="reportInsights" class="mt-5"></div>
   </div>
 </div>
 
@@ -104,7 +107,7 @@
   &copy; 2025 Energy Dashboard. All rights reserved.
 </footer>
 
-<!-- Firebase + Logic -->
+<!-- Firebase + Report Script -->
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
@@ -116,11 +119,12 @@
       const q = query(userDevicesRef, where("uid", "==", user.uid));
       const querySnapshot = await getDocs(q);
 
-      let totalKwhMonth = 0, totalCostMonth = 0;
-      let totalKwhYear = 0, totalCostYear = 0;
+      let totalKwhMonth = 0, totalCostMonth = 0, totalKwhYear = 0, totalCostYear = 0;
+      let mostExpensive = null, leastExpensive = null, highestUsage = null, heavyDevices = [];
 
       querySnapshot.forEach((docSnap) => {
         const device = docSnap.data();
+        const name = device.deviceName;
         const power = device.devicePower;
         const usage = device.deviceUsage;
 
@@ -134,9 +138,14 @@
         totalKwhYear += kWhYear;
         totalCostYear += costYear;
 
+        if (!mostExpensive || costMonth > mostExpensive.cost) mostExpensive = { name, cost: costMonth };
+        if (!leastExpensive || costMonth < leastExpensive.cost) leastExpensive = { name, cost: costMonth };
+        if (!highestUsage || kWhMonth > highestUsage.kwh) highestUsage = { name, kwh: kWhMonth };
+        if (kWhMonth > 50) heavyDevices.push({ name, kwh: kWhMonth });
+
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td>${device.deviceName}</td>
+          <td>${name}</td>
           <td>${power} W</td>
           <td>${usage} hrs/day</td>
           <td>${kWhMonth.toFixed(2)} kWh</td>
@@ -151,15 +160,31 @@
       document.getElementById("totalCostMonth").textContent = totalCostMonth.toFixed(2);
       document.getElementById("totalKwhYear").textContent = totalKwhYear.toFixed(2);
       document.getElementById("totalCostYear").textContent = totalCostYear.toFixed(2);
+
+      const insights = document.getElementById("reportInsights");
+      insights.innerHTML = `
+        <div class="card p-4">
+          <h4 class="mb-3">🔍 Report Insights</h4>
+          <ul class="list-group">
+            <li class="list-group-item">🏆 <strong>Most Expensive Device:</strong> ${mostExpensive?.name} (£${mostExpensive.cost.toFixed(2)} / month)</li>
+            <li class="list-group-item">💸 <strong>Least Expensive Device:</strong> ${leastExpensive?.name} (£${leastExpensive.cost.toFixed(2)} / month)</li>
+            <li class="list-group-item">⚡ <strong>Highest Energy Consumer:</strong> ${highestUsage?.name} (${highestUsage.kwh.toFixed(2)} kWh/month)</li>
+            <li class="list-group-item">🔌 <strong>Devices Using > 50 kWh/month:</strong>
+              <ul class="mt-2">
+                ${heavyDevices.map(d => `<li>${d.name} – ${d.kwh.toFixed(2)} kWh</li>`).join("") || '<li>None</li>'}
+              </ul>
+            </li>
+          </ul>
+        </div>
+      `;
     }
   });
 </script>
 
-<!-- Sort Table Columns with Icons -->
+<!-- Sort Table -->
 <script>
   document.querySelectorAll("th[data-sort]").forEach((header, index) => {
     let ascending = true;
-
     header.style.cursor = "pointer";
 
     header.addEventListener("click", () => {
@@ -169,24 +194,19 @@
       rows.sort((a, b) => {
         let valA = a.cells[index].textContent.trim();
         let valB = b.cells[index].textContent.trim();
-
         if (type === "number") {
           valA = parseFloat(valA.replace(/[£,]/g, ""));
           valB = parseFloat(valB.replace(/[£,]/g, ""));
         }
-
         return ascending ? valA - valB : valB - valA;
       });
 
       ascending = !ascending;
-
       const tbody = document.querySelector("#deviceReportTable");
       tbody.innerHTML = "";
       rows.forEach(row => tbody.appendChild(row));
-
-      document.querySelectorAll(".sort-icon").forEach(icon => icon.textContent = "");
-      const icon = header.querySelector(".sort-icon");
-      icon.textContent = ascending ? "↑" : "↓";
+      document.querySelectorAll(".sort-icon").forEach(i => i.textContent = "");
+      header.querySelector(".sort-icon").textContent = ascending ? "↑" : "↓";
     });
   });
 </script>
