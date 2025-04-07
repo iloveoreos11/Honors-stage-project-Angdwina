@@ -10,6 +10,26 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
+// ✅ Moved outside so autocomplete can call it instantly
+window.updateEstimates = function () {
+  const power = parseFloat(document.getElementById("devicePower").value);
+  const usage = parseFloat(document.getElementById("deviceUsage").value);
+  const costDisplay = document.getElementById("estimatedCost");
+  const co2Display = document.getElementById("estimatedCO2");
+
+  let costRate = 0.34;
+  let carbonRate = 0.233;
+
+  if (!isNaN(power) && !isNaN(usage)) {
+    const dailyKWh = (power * usage) / 1000;
+    const monthlyCost = (dailyKWh * 30 * costRate).toFixed(2);
+    const monthlyCO2 = (dailyKWh * 30 * carbonRate).toFixed(2);
+
+    if (costDisplay) costDisplay.textContent = `£${monthlyCost}`;
+    if (co2Display) co2Display.textContent = `${monthlyCO2} kg/month`;
+  }
+};
+
 let allDevices = []; // global device list
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -90,26 +110,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     form.reset();
   });
-
-  // 👇 Update estimate when selecting device from autocomplete
-  window.updateEstimates = function () {
-    const power = parseFloat(document.getElementById("devicePower").value);
-    const usage = parseFloat(document.getElementById("deviceUsage").value);
-    const costDisplay = document.getElementById("estimatedCost");
-    const co2Display = document.getElementById("estimatedCO2");
-
-    let costRate = 0.34;
-    let carbonRate = 0.233;
-
-    if (!isNaN(power) && !isNaN(usage)) {
-      const dailyKWh = (power * usage) / 1000;
-      const monthlyCost = (dailyKWh * 30 * costRate).toFixed(2);
-      const monthlyCO2 = (dailyKWh * 30 * carbonRate).toFixed(2);
-
-      if (costDisplay) costDisplay.textContent = `£${monthlyCost}`;
-      if (co2Display) co2Display.textContent = `${monthlyCO2} kg/month`;
-    }
-  };
 });
 
 function getEmoji(pattern) {
