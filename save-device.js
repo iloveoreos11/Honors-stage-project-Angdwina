@@ -20,8 +20,6 @@ onAuthStateChanged(auth, (user) => {
     // Load user devices
     const q = query(userDevicesRef, where("uid", "==", user.uid));
     onSnapshot(q, (snapshot) => {
-
-      
       // Clear existing
       const existingCards = deviceContainer.querySelectorAll(".device-card");
       existingCards.forEach(card => card.remove());
