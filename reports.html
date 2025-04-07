@@ -30,6 +30,10 @@
       backdrop-filter: blur(12px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
+    .sort-icon {
+      font-weight: bold;
+      margin-left: 5px;
+    }
     footer {
       background-color: #2c3e50;
       color: white;
@@ -45,19 +49,14 @@
 <nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">📊 Reports</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <div class="collapse navbar-collapse justify-content-end">
       <ul class="navbar-nav gap-3">
         <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="devices.html">Devices</a></li>
         <li class="nav-item"><a class="nav-link active" href="reports.html">Reports</a></li>
         <li class="nav-item"><a class="nav-link" href="recommendations.html">Recommendations</a></li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-            <i class="fas fa-user-circle"></i> Account
-          </a>
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-circle"></i> Account</a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
             <li><a class="dropdown-item" href="#">🔓 Sign Out</a></li>
@@ -70,78 +69,71 @@
 
 <div class="container py-5">
   <div class="card p-4">
-    <h2 class="text-center mb-4">📊 Energy Reports</h2>
-    
-    <!-- Device Table -->
+    <h2 class="text-center mb-3">📊 Energy Reports</h2>
+    <p class="text-muted text-center mb-4">🔁 Click any column heading to sort the table by that value.</p>
+
     <table class="table table-bordered">
       <thead>
         <tr>
-          <th>Device</th>
-          <th>Power (W)</th>
-          <th>Usage (hrs/day)</th>
-          <th>kWh / Month</th>
-          <th>£ / Month</th>
-          <th>kWh / Year (est.)</th>
-          <th>£ / Year (est.)</th>
+          <th data-sort="text">Device <span class="sort-icon"></span></th>
+          <th data-sort="number">Power (W) <span class="sort-icon"></span></th>
+          <th data-sort="number">Usage (hrs/day) <span class="sort-icon"></span></th>
+          <th data-sort="number">kWh / Month <span class="sort-icon"></span></th>
+          <th data-sort="number">£ / Month <span class="sort-icon"></span></th>
+          <th data-sort="number">kWh / Year <span class="sort-icon"></span></th>
+          <th data-sort="number">£ / Year <span class="sort-icon"></span></th>
         </tr>
       </thead>
-      <tbody id="deviceReportTable">
-        <!-- Data will be populated here dynamically -->
-      </tbody>
+      <tbody id="deviceReportTable"></tbody>
+      <tfoot>
+        <tr class="fw-bold bg-light">
+          <td>Total for All Devices</td>
+          <td>—</td>
+          <td>—</td>
+          <td id="totalKwhMonth">0</td>
+          <td id="totalCostMonth">0</td>
+          <td id="totalKwhYear">0</td>
+          <td id="totalCostYear">0</td>
+        </tr>
+      </tfoot>
     </table>
-
-    <!-- Totals -->
-    <div class="mt-4">
-      <h4>Total for All Devices</h4>
-      <p><strong>Total kWh / Month:</strong> <span id="totalKwhMonth">0</span> kWh</p>
-      <p><strong>Total £ / Month:</strong> £<span id="totalCostMonth">0</span></p>
-      <p><strong>Total kWh / Year:</strong> <span id="totalKwhYear">0</span> kWh</p>
-      <p><strong>Total £ / Year:</strong> £<span id="totalCostYear">0</span></p>
-    </div>
   </div>
 </div>
 
 <footer>
-  2025 © Energy Dashboard Limited
+  &copy; 2025 Energy Dashboard. All rights reserved.
 </footer>
 
+<!-- Firebase + Logic -->
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
   import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
-  // Fetch the devices and calculate the totals
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       const userDevicesRef = collection(db, "devices");
       const q = query(userDevicesRef, where("uid", "==", user.uid));
       const querySnapshot = await getDocs(q);
 
-      let totalKwhMonth = 0;
-      let totalCostMonth = 0;
-      let totalKwhYear = 0;
-      let totalCostYear = 0;
+      let totalKwhMonth = 0, totalCostMonth = 0;
+      let totalKwhYear = 0, totalCostYear = 0;
 
       querySnapshot.forEach((docSnap) => {
         const device = docSnap.data();
         const power = device.devicePower;
         const usage = device.deviceUsage;
 
-        // Calculate kWh / Month
         const kWhMonth = (power * usage * 30) / 1000;
-        const costMonth = kWhMonth * (device.costPerKwh || 0.34); // Default to 0.34 if no cost per kWh
-
-        // Calculate kWh / Year and £ / Year
+        const costMonth = kWhMonth * (device.costPerKwh || 0.34);
         const kWhYear = kWhMonth * 12;
         const costYear = costMonth * 12;
 
-        // Add totals
         totalKwhMonth += kWhMonth;
         totalCostMonth += costMonth;
         totalKwhYear += kWhYear;
         totalCostYear += costYear;
 
-        // Append device row to table
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${device.deviceName}</td>
@@ -155,7 +147,6 @@
         document.getElementById("deviceReportTable").appendChild(row);
       });
 
-      // Update totals
       document.getElementById("totalKwhMonth").textContent = totalKwhMonth.toFixed(2);
       document.getElementById("totalCostMonth").textContent = totalCostMonth.toFixed(2);
       document.getElementById("totalKwhYear").textContent = totalKwhYear.toFixed(2);
@@ -164,7 +155,42 @@
   });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Sort Table Columns with Icons -->
+<script>
+  document.querySelectorAll("th[data-sort]").forEach((header, index) => {
+    let ascending = true;
 
+    header.style.cursor = "pointer";
+
+    header.addEventListener("click", () => {
+      const type = header.getAttribute("data-sort");
+      const rows = Array.from(document.querySelector("#deviceReportTable").rows);
+
+      rows.sort((a, b) => {
+        let valA = a.cells[index].textContent.trim();
+        let valB = b.cells[index].textContent.trim();
+
+        if (type === "number") {
+          valA = parseFloat(valA.replace(/[£,]/g, ""));
+          valB = parseFloat(valB.replace(/[£,]/g, ""));
+        }
+
+        return ascending ? valA - valB : valB - valA;
+      });
+
+      ascending = !ascending;
+
+      const tbody = document.querySelector("#deviceReportTable");
+      tbody.innerHTML = "";
+      rows.forEach(row => tbody.appendChild(row));
+
+      document.querySelectorAll(".sort-icon").forEach(icon => icon.textContent = "");
+      const icon = header.querySelector(".sort-icon");
+      icon.textContent = ascending ? "↑" : "↓";
+    });
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
