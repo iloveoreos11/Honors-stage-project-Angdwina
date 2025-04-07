@@ -31,18 +31,18 @@ onAuthStateChanged(auth, (user) => {
         const d = docSnap.data();
         const card = document.createElement("div");
         card.className = "device-card";
-        card.innerHTML = 
+        card.innerHTML = `
           <div>
             <strong>${d.deviceName}</strong><br>
             <span class='badge bg-light text-dark'>${getEmoji(d.usagePattern)} ${d.usagePattern}</span><br>
             <small>${d.devicePower}W • ${d.deviceUsage} hrs/day</small>
           </div>
           <button class="btn btn-outline-danger btn-sm delete-btn">Delete</button>
-        ;
+        `;
 
         // Delete logic
         card.querySelector(".delete-btn").addEventListener("click", async () => {
-          if (confirm(Delete ${d.deviceName}?)) {
+          if (confirm(`Delete ${d.deviceName}?`)) {
             await deleteDoc(doc(db, "devices", docSnap.id));
           }
         });
