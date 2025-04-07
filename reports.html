@@ -2,31 +2,35 @@
 <html lang="en">
 <head>
   <script type="module" src="firebase-config.js"></script>
-
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Your Device Report</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
-            color: #333;
-        }
-
-        .navbar {
-            background-color: #2c3e50;
-        }
-
-        .navbar-brand, .nav-link {
-            color: white !important;
-        }
-
-        .nav-link:hover {
-            color: #1abc9c !important;
-        }
-        footer {
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e0eafc);
+      color: #333;
+    }
+    .navbar {
+      background-color: #2c3e50;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .nav-link:hover {
+      color: #1abc9c !important;
+    }
+    .card {
+      border: none;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    footer {
       background-color: #2c3e50;
       color: white;
       text-align: center;
@@ -34,139 +38,13 @@
       margin-top: 3rem;
       font-size: 1rem;
     }
-        .card {
-            border: none;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            transition: 0.3s ease;
-        }
-
-        .card:hover {
-            transform: scale(1.01);
-        }
-
-        .table thead {
-            background-color: #1abc9c;
-            color: white;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: #e2d1c3;
-        }
-
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(255, 255, 255, 0.7);
-        }
-
-        th.highlight {
-            border-bottom: 3px solid #1abc9c;
-            color: #1abc9c;
-        }
-
-        th:hover {
-            cursor: pointer;
-        }
-
-        /* Hamburger icon (3 lines) styling */
-        .navbar-toggler-icon {
-            background-color: white;  /* White color for the hamburger lines */
-            width: 30px;  /* Set the width of the hamburger icon */
-            height: 3px;  /* Set the height of each line */
-            border-radius: 2px;  /* Rounded edges for the lines */
-            position: relative;
-            transition: 0.3s ease;
-        }
-
-        .navbar-toggler-icon::before,
-        .navbar-toggler-icon::after {
-            content: '';
-            display: block;
-            position: absolute;
-            width: 30px;
-            height: 3px;
-            background-color: white;  /* White for both the top and bottom lines */
-            border-radius: 2px;
-            transition: 0.3s ease;
-        }
-
-        .navbar-toggler-icon::before {
-            top: -8px; /* Position the top line */
-        }
-
-        .navbar-toggler-icon::after {
-            top: 8px; /* Position the bottom line */
-        }
-
-        /* Button styling */
-        .toggle-buttons button {
-            width: 100%;
-            margin-bottom: 0.5rem;
-            background-color: #2c3e50;
-            border: none;
-            color: white;
-            font-weight: 600;
-            padding: 10px;
-            border-radius: 5px;
-            transition: 0.3s ease;
-        }
-
-        .toggle-buttons button:hover {
-            background-color: #1abc9c;
-            color: white;
-            border-color: #1abc9c;
-            transform: scale(1.05);
-        }
-
-        .toggle-buttons button.active {
-            background-color: #1abc9c;
-            color: white;
-        }
-
-        /* Footer styling */
-        footer {
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            margin-top: 3rem;
-            font-size: 0.9rem;
-        }
-
-        /* Media Queries for responsiveness */
-        @media (max-width: 768px) {
-            .navbar-toggler-icon {
-                background-color: white; /* white hamburger icon for mobile */
-            }
-
-            .toggle-buttons {
-                display: block;
-                gap: 0;
-            }
-
-            .toggle-buttons button {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 576px) {
-            /* Stack columns on smaller screens */
-            .table th, .table td {
-                padding: 8px;
-            }
-
-            .container {
-                padding: 15px;
-            }
-        }
-    </style>
+  </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">⚡ Energy Dashboard</a>
+    <a class="navbar-brand" href="#">📊 Reports</a>
     <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -174,14 +52,13 @@
       <ul class="navbar-nav gap-3">
         <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="devices.html">Devices</a></li>
-        <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
+        <li class="nav-item"><a class="nav-link active" href="reports.html">Reports</a></li>
         <li class="nav-item"><a class="nav-link" href="recommendations.html">Recommendations</a></li>
-        <!-- Account Dropdown -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             <i class="fas fa-user-circle"></i> Account
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+          <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
             <li><a class="dropdown-item" href="#">🔓 Sign Out</a></li>
           </ul>
@@ -192,147 +69,102 @@
 </nav>
 
 <div class="container py-5">
-  <h2 class="text-center">Your Device Report</h2>
-  <div class="alert alert-info" role="alert">
-    <strong>Tip:</strong> You can <strong>sort</strong> by any column by clicking the column heading. Use the filter to see devices based on their usage patterns like <strong>Always On</strong>, <strong>Intermittent</strong>, or <strong>Standby</strong>.
-  </div>
-
   <div class="card p-4">
-    <input type="text" id="deviceSearch" class="form-control mb-3" placeholder="Search devices..." onkeyup="searchDevices()">
+    <h2 class="text-center mb-4">📊 Energy Reports</h2>
+    
+    <!-- Device Table -->
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th>Power (W)</th>
+          <th>Usage (hrs/day)</th>
+          <th>kWh / Month</th>
+          <th>£ / Month</th>
+          <th>kWh / Year (est.)</th>
+          <th>£ / Year (est.)</th>
+        </tr>
+      </thead>
+      <tbody id="deviceReportTable">
+        <!-- Data will be populated here dynamically -->
+      </tbody>
+    </table>
 
-    <div class="d-flex justify-content-between mb-3">
-      <select id="usageFilter" class="form-select w-auto" onchange="filterTable()">
-        <option value="All">All</option>
-        <option value="Always On">Always On</option>
-        <option value="Intermittent">Intermittent</option>
-        <option value="Standby">Standby</option>
-      </select>
-    </div>
-
-    <!-- Responsive Table -->
-    <div class="table-responsive">
-      <table class="table table-hover table-striped">
-        <thead>
-          <tr>
-            <th onclick="sortTable(0)">Device</th>
-            <th onclick="sortTable(1)">Power (W)</th>
-            <th onclick="sortTable(2)">Usage (hrs/day)</th>
-            <th onclick="sortTable(3)">kWh / Month</th>
-            <th onclick="sortTable(4)">£ / Month</th>
-            <th onclick="sortTable(5)">kWh / Year (est.)</th>
-            <th onclick="sortTable(6)">£ / Year (est.)</th>
-          </tr>
-        </thead>
-        <tbody id="reportTableBody">
-          <tr class="device-row" data-usage-pattern="Always On">
-            <td>Heater</td>
-            <td>1500</td>
-            <td>4</td>
-            <td>180</td>
-            <td class="cost">£61.20</td>
-            <td>2160</td>
-            <td>£734.40</td>
-          </tr>
-          <tr class="device-row" data-usage-pattern="Intermittent">
-            <td>Kettle</td>
-            <td>1000</td>
-            <td>2</td>
-            <td>60</td>
-            <td class="cost">£20.40</td>
-            <td>720</td>
-            <td>£244.80</td>
-          </tr>
-          <tr class="device-row" data-usage-pattern="Standby">
-            <td>Microwave</td>
-            <td>1200</td>
-            <td>0.5</td>
-            <td>18</td>
-            <td class="cost">£6.12</td>
-            <td>216</td>
-            <td>£73.44</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card p-4 mt-4">
-      <h6 class="text-center">Total for All Devices</h6>
-      <p><strong>Total kWh / Month:</strong> <span id="totalKWhMonth">258</span> kWh</p>
-      <p><strong>Total £ / Month:</strong> <span id="totalCostMonth">£87.72</span></p>
-      <p><strong>Total kWh / Year:</strong> <span id="totalKWhYear">3096</span> kWh</p>
-      <p><strong>Total £ / Year:</strong> <span id="totalCostYear">£1052.64</span></p>
+    <!-- Totals -->
+    <div class="mt-4">
+      <h4>Total for All Devices</h4>
+      <p><strong>Total kWh / Month:</strong> <span id="totalKwhMonth">0</span> kWh</p>
+      <p><strong>Total £ / Month:</strong> £<span id="totalCostMonth">0</span></p>
+      <p><strong>Total kWh / Year:</strong> <span id="totalKwhYear">0</span> kWh</p>
+      <p><strong>Total £ / Year:</strong> £<span id="totalCostYear">0</span></p>
     </div>
   </div>
 </div>
 
-<script>
-  function sortTable(columnIndex) {
-    const table = document.querySelector('table');
-    const rows = Array.from(table.querySelectorAll('tr:nth-child(n+2)')); // skip the header row
-    const isAscending = table.querySelector(`th:nth-child(${columnIndex + 1})`).classList.contains('asc');
-    
-    rows.sort((rowA, rowB) => {
-      const cellA = rowA.children[columnIndex].textContent.trim();
-      const cellB = rowB.children[columnIndex].textContent.trim();
-      
-      const valueA = isNaN(cellA) ? cellA : parseFloat(cellA.replace('£', '').replace('kWh', '').replace(' ', ''));
-      const valueB = isNaN(cellB) ? cellB : parseFloat(cellB.replace('£', '').replace('kWh', '').replace(' ', ''));
-      
-      return (valueA > valueB ? 1 : (valueA < valueB ? -1 : 0)) * (isAscending ? 1 : -1);
-    });
-    
-    rows.forEach(row => table.querySelector('tbody').appendChild(row));
-    
-    table.querySelectorAll('th').forEach(th => th.classList.remove('asc', 'desc', 'highlight'));
-    table.querySelector(`th:nth-child(${columnIndex + 1})`).classList.toggle('asc', !isAscending);
-    table.querySelector(`th:nth-child(${columnIndex + 1})`).classList.toggle('desc', isAscending);
-    table.querySelector(`th:nth-child(${columnIndex + 1})`).classList.add('highlight');
-  }
-
-  function filterTable() {
-    let filterValue = document.querySelector('#usageFilter').value;
-    let rows = document.querySelectorAll('.device-row');
-    rows.forEach(row => {
-      const usagePattern = row.dataset.usagePattern;
-      if (filterValue === "All" || usagePattern === filterValue) {
-        row.style.display = ''; // Show row
-      } else {
-        row.style.display = 'none'; // Hide row
-      }
-    });
-  }
-
-  function searchDevices() {
-    const filter = document.getElementById("deviceSearch").value.toLowerCase();
-    const rows = document.querySelectorAll(".device-row");
-    rows.forEach(row => {
-      const deviceName = row.children[0].textContent.toLowerCase();
-      if (deviceName.indexOf(filter) > -1) {
-        row.style.display = "";
-      } else {
-        row.style.display = "none";
-      }
-    });
-  }
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-
-<!-- Footer -->
 <footer>
-  2025 ©  Energy Dashboard Limited
+  2025 © Energy Dashboard Limited
 </footer>
-<script type="module">
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { auth } from './firebase-config.js';
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "signup.html"; // redirect to signup if not logged in
+<script type="module">
+  import { auth, db } from './firebase-config.js';
+  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+  import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+
+  // Fetch the devices and calculate the totals
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const userDevicesRef = collection(db, "devices");
+      const q = query(userDevicesRef, where("uid", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+
+      let totalKwhMonth = 0;
+      let totalCostMonth = 0;
+      let totalKwhYear = 0;
+      let totalCostYear = 0;
+
+      querySnapshot.forEach((docSnap) => {
+        const device = docSnap.data();
+        const power = device.devicePower;
+        const usage = device.deviceUsage;
+
+        // Calculate kWh / Month
+        const kWhMonth = (power * usage * 30) / 1000;
+        const costMonth = kWhMonth * (device.costPerKwh || 0.34); // Default to 0.34 if no cost per kWh
+
+        // Calculate kWh / Year and £ / Year
+        const kWhYear = kWhMonth * 12;
+        const costYear = costMonth * 12;
+
+        // Add totals
+        totalKwhMonth += kWhMonth;
+        totalCostMonth += costMonth;
+        totalKwhYear += kWhYear;
+        totalCostYear += costYear;
+
+        // Append device row to table
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${device.deviceName}</td>
+          <td>${power} W</td>
+          <td>${usage} hrs/day</td>
+          <td>${kWhMonth.toFixed(2)} kWh</td>
+          <td>£${costMonth.toFixed(2)}</td>
+          <td>${kWhYear.toFixed(2)} kWh</td>
+          <td>£${costYear.toFixed(2)}</td>
+        `;
+        document.getElementById("deviceReportTable").appendChild(row);
+      });
+
+      // Update totals
+      document.getElementById("totalKwhMonth").textContent = totalKwhMonth.toFixed(2);
+      document.getElementById("totalCostMonth").textContent = totalCostMonth.toFixed(2);
+      document.getElementById("totalKwhYear").textContent = totalKwhYear.toFixed(2);
+      document.getElementById("totalCostYear").textContent = totalCostYear.toFixed(2);
     }
   });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
