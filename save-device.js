@@ -10,20 +10,26 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-const form = document.getElementById("deviceForm");
-const deviceContainer = document.querySelector("#deviceCardContainer"); // Target correct container
+window.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("deviceForm");
+  const deviceContainer = document.querySelector("#deviceCardContainer");
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
+  if (!form || !deviceContainer) {
+    console.error("Missing #deviceForm or #deviceCardContainer in HTML.");
+    return;
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      console.warn("No user signed in.");
+      return;
+    }
+
     const userDevicesRef = collection(db, "devices");
-
-    // Load user devices
     const q = query(userDevicesRef, where("uid", "==", user.uid));
+
+    // Realtime load
     onSnapshot(q, (snapshot) => {
-
-
-      
-      // Clear existing
       const existingCards = deviceContainer.querySelectorAll(".device-card");
       existingCards.forEach(card => card.remove());
 
@@ -40,7 +46,6 @@ onAuthStateChanged(auth, (user) => {
           <button class="btn btn-outline-danger btn-sm delete-btn">Delete</button>
         `;
 
-        // Delete logic
         card.querySelector(".delete-btn").addEventListener("click", async () => {
           if (confirm(`Delete ${d.deviceName}?`)) {
             await deleteDoc(doc(db, "devices", docSnap.id));
@@ -51,9 +56,10 @@ onAuthStateChanged(auth, (user) => {
       });
     });
 
-    // Handle form submission
+    // Save new device
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const deviceName = document.getElementById("deviceName").value;
       const devicePower = parseInt(document.getElementById("devicePower").value);
       const deviceUsage = parseFloat(document.getElementById("deviceUsage").value);
@@ -74,7 +80,7 @@ onAuthStateChanged(auth, (user) => {
         alert("Error saving device: " + error.message);
       }
     });
-  }
+  });
 });
 
 function getEmoji(pattern) {
