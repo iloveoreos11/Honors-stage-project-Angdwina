@@ -1,19 +1,19 @@
 // firebase-config.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
+import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBhmQPpQliV41ZH0cXofUsAWo1elsAvD2I",
-  authDomain: "energy-dashboard-angdwina.firebaseapp.com",
-  projectId: "energy-dashboard-angdwina",
-  storageBucket: "energy-dashboard-angdwina.appspot.com",
-  messagingSenderId: "446248966763",
-  appId: "1:446248966763:web:a67c811f6456b17be02f2e"
+  apiKey: "YOUR-KEY",
+  authDomain: "YOUR.firebaseapp.com",
+  projectId: "YOUR-ID",
+  storageBucket: "YOUR.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "APP-ID"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-export { app, auth, db };
+export { db, auth };
