@@ -1,52 +1,56 @@
-// Import Firebase Auth functions
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { auth } from './firebase-config.js';
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
 
-// Sign Up
-const signupForm = document.getElementById("signupForm");
-if (signupForm) {
-  signupForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = document.getElementById("signupEmail").value;
-    const password = document.getElementById("signupPassword").value;
+// Handle the Sign-Up form
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        alert("🎉 Account created! Redirecting...");
-        window.location.href = "index.html"; // redirect to dashboard
-      })
-      .catch((error) => {
-        document.getElementById("signupError").textContent = error.message;
-      });
-  });
-}
+  const email = document.getElementById("signupEmail").value;
+  const password = document.getElementById("signupPassword").value;
+  const username = document.getElementById("signupUsername").value;
 
-// Sign In
-const signinForm = document.getElementById("signinForm");
-if (signinForm) {
-  signinForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = document.getElementById("signinEmail").value;
-    const password = document.getElementById("signinPassword").value;
+  // Capture Cost per kWh and Carbon Intensity from the form
+  const costPerKwh = parseFloat(document.getElementById("costPerKwh").value);
+  const carbonIntensity = parseFloat(document.getElementById("carbonIntensity").value);
 
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        alert("🔐 Signed in successfully!");
-        window.location.href = "index.html";
-      })
-      .catch((error) => {
-        document.getElementById("signinError").textContent = error.message;
-      });
-  });
-}
+  try {
+    // Create the user with Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-// Sign Out (optional, use in navbar or settings page)
-const signOutBtn = document.getElementById("signOutBtn");
-if (signOutBtn) {
-  signOutBtn.addEventListener("click", () => {
-    signOut(auth).then(() => {
-      alert("👋 Signed out!");
-      window.location.href = "signup.html";
+    // Save the user and their data to Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      username,
+      email,
+      costPerKwh,  // Save the Cost per kWh
+      carbonIntensity  // Save the Carbon Intensity
     });
-  });
-}
+
+    alert("Sign-up successful!");
+    window.location.href = "index.html";  // Redirect to Dashboard or another page
+
+  } catch (error) {
+    alert(error.message);  // Handle any errors
+  }
+});
+
+// Handle the Sign-In form
+document.getElementById("signinForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("signinEmail").value;
+  const password = document.getElementById("signinPassword").value;
+
+  try {
+    // Sign in the user with Firebase Auth
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    alert("Sign-in successful!");
+    window.location.href = "index.html";  // Redirect to Dashboard or another page
+
+  } catch (error) {
+    alert(error.message);  // Handle any errors
+  }
+});
