@@ -32,10 +32,119 @@ window.updateEstimates = function () {
 
 let allDevices = [];
 
-const form = document.getElementById("deviceForm");
-const deviceContainer = document.querySelector("#deviceCardContainer");
-const searchInput = document.getElementById("deviceSearch");
-const sortSelect = document.getElementById("sortDevices");
+window.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("deviceForm");
+  const deviceContainer = document.querySelector("#deviceCardContainer");
+  const searchInput = document.getElementById("deviceSearch");
+  const sortSelect = document.getElementById("sortDevices");
+
+  const renderDevices = () => {
+    const keyword = searchInput?.value?.toLowerCase() || "";
+    const sortBy = sortSelect?.value;
+
+    let filtered = [...allDevices].filter(d => d.deviceName.toLowerCase().includes(keyword));
+
+    if (sortBy === "name") filtered.sort((a, b) => a.deviceName.localeCompare(b.deviceName));
+    else if (sortBy === "power") filtered.sort((a, b) => a.devicePower - b.devicePower);
+    else if (sortBy === "usage") filtered.sort((a, b) => a.deviceUsage - b.deviceUsage);
+
+    deviceContainer.innerHTML = "";
+    filtered.forEach(d => {
+      const card = document.createElement("div");
+      card.className = "device-card";
+      card.innerHTML = `
+        <div>
+          <strong>${d.deviceName}</strong><br>
+          <span class='badge bg-light text-dark'>${getEmoji(d.usagePattern)} ${d.usagePattern}</span><br>
+          <small>${d.devicePower}W • ${d.deviceUsage} hrs/day</small>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-outline-primary btn-sm edit-btn" data-id="${d.id}">Edit</button>
+          <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${d.id}">Delete</button>
+        </div>
+      `;
+
+      // DELETE
+      card.querySelector(".delete-btn").addEventListener("click", async () => {
+        if (confirm(`Delete ${d.deviceName}?`)) {
+          await deleteDoc(doc(db, "devices", d.id));
+        }
+      });
+
+      // EDIT
+      card.querySelector(".edit-btn").addEventListener("click", () => {
+        document.getElementById("deviceName").value = d.deviceName;
+        document.getElementById("devicePower").value = d.devicePower;
+        document.getElementById("deviceUsage").value = d.deviceUsage;
+        document.getElementById("usagePattern").value = d.usagePattern;
+        document.getElementById("editingDeviceId").value = d.id;
+        document.querySelector("#deviceForm button[type='submit']").textContent = "Update Device";
+        document.getElementById("formHeader").textContent = "✏️ Edit Device";
+        document.getElementById("deviceSearchInput").value = "";
+      });
+
+      deviceContainer.appendChild(card);
+    });
+  };
+
+  if (searchInput) searchInput.addEventListener("input", renderDevices);
+  if (sortSelect) sortSelect.addEventListener("change", renderDevices);
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) return;
+
+    const userDevicesRef = collection(db, "devices");
+    const q = query(userDevicesRef, where("uid", "==", user.uid));
+
+    onSnapshot(q, (snapshot) => {
+      allDevices = [];
+      snapshot.forEach(docSnap => {
+        allDevices.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      renderDevices();
+    });
+  });
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+  
+    const deviceName = document.getElementById("deviceName").value;
+    const devicePower = parseFloat(document.getElementById("devicePower").value);
+    const deviceUsage = parseFloat(document.getElementById("deviceUsage").value);
+    const usagePattern = document.getElementById("usagePattern").value;
+    const editingId = document.getElementById("editingDeviceId").value;
+  
+    const user = auth.currentUser;
+    if (!user) return;
+  
+    if (editingId) {
+      const ref = doc(db, "devices", editingId);
+      await updateDoc(ref, {
+        uid: user.uid,
+        deviceName,
+        devicePower,
+        deviceUsage,
+        usagePattern,
+      });
+    } else {
+      await addDoc(collection(db, "devices"), {
+        uid: user.uid,
+        deviceName,
+        devicePower,
+        deviceUsage,
+        usagePattern
+      });
+    }
+
+    // ⏳ Small delay so Firestore can trigger UI refresh cleanly
+    setTimeout(() => {
+      form.reset();
+      document.getElementById("editingDeviceId").value = "";
+      document.getElementById("formHeader").textContent = "➕ Add a New Device";
+      document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
+    }, 150);
+  });
+});
 
 function getEmoji(pattern) {
   switch (pattern) {
@@ -46,106 +155,3 @@ function getEmoji(pattern) {
     default: return "🔌";
   }
 }
-
-function renderDevices() {
-  const keyword = searchInput?.value?.toLowerCase() || "";
-  const sortBy = sortSelect?.value;
-
-  let filtered = [...allDevices].filter(d =>
-    d.deviceName.toLowerCase().includes(keyword)
-  );
-
-  if (sortBy === "name") filtered.sort((a, b) => a.deviceName.localeCompare(b.deviceName));
-  else if (sortBy === "power") filtered.sort((a, b) => a.devicePower - b.devicePower);
-  else if (sortBy === "usage") filtered.sort((a, b) => a.deviceUsage - b.deviceUsage);
-
-  deviceContainer.innerHTML = "";
-  filtered.forEach(d => {
-    const card = document.createElement("div");
-    card.className = "device-card";
-    card.innerHTML = `
-      <div>
-        <strong>${d.deviceName}</strong><br>
-        <span class='badge bg-light text-dark'>${getEmoji(d.usagePattern)} ${d.usagePattern}</span><br>
-        <small>${d.devicePower}W • ${d.deviceUsage} hrs/day</small>
-      </div>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-outline-primary btn-sm edit-btn" data-id="${d.id}">Edit</button>
-        <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${d.id}">Delete</button>
-      </div>
-    `;
-
-    // DELETE
-    card.querySelector(".delete-btn").addEventListener("click", async () => {
-      if (confirm(`Delete ${d.deviceName}?`)) {
-        await deleteDoc(doc(db, "devices", d.id));
-      }
-    });
-
-    // EDIT
-    card.querySelector(".edit-btn").addEventListener("click", () => {
-      document.getElementById("deviceName").value = d.deviceName;
-      document.getElementById("devicePower").value = d.devicePower;
-      document.getElementById("deviceUsage").value = d.deviceUsage;
-      document.getElementById("usagePattern").value = d.usagePattern;
-      document.getElementById("editingDeviceId").value = d.id;
-      document.querySelector("#deviceForm button[type='submit']").textContent = "Update Device";
-      document.getElementById("formHeader").textContent = "✏️ Edit Device";
-      document.getElementById("deviceSearchInput").value = "";
-    });
-
-    deviceContainer.appendChild(card);
-  });
-}
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) return;
-
-  const userDevicesRef = collection(db, "devices");
-  const q = query(userDevicesRef, where("uid", "==", user.uid));
-
-  onSnapshot(q, (snapshot) => {
-    allDevices = [];
-    snapshot.forEach(docSnap => {
-      allDevices.push({ id: docSnap.id, ...docSnap.data() });
-    });
-    renderDevices();
-  });
-});
-
-form?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const deviceName = document.getElementById("deviceName").value;
-  const devicePower = parseFloat(document.getElementById("devicePower").value);
-  const deviceUsage = parseFloat(document.getElementById("deviceUsage").value);
-  const usagePattern = document.getElementById("usagePattern").value;
-  const editingId = document.getElementById("editingDeviceId").value;
-
-  const user = auth.currentUser;
-  if (!user) return;
-
-  if (editingId) {
-    const ref = doc(db, "devices", editingId);
-    await updateDoc(ref, {
-      uid: user.uid,
-      deviceName,
-      devicePower,
-      deviceUsage,
-      usagePattern,
-    });
-  } else {
-    await addDoc(collection(db, "devices"), {
-      uid: user.uid,
-      deviceName,
-      devicePower,
-      deviceUsage,
-      usagePattern,
-    });
-  }
-
-  form.reset();
-  document.getElementById("editingDeviceId").value = "";
-  document.getElementById("formHeader").textContent = "➕ Add a New Device";
-  document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
-});
