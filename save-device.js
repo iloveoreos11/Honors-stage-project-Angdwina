@@ -10,7 +10,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-// ✅ Moved outside so autocomplete can call it instantly
 window.updateEstimates = function () {
   const power = parseFloat(document.getElementById("devicePower").value);
   const usage = parseFloat(document.getElementById("deviceUsage").value);
@@ -30,7 +29,7 @@ window.updateEstimates = function () {
   }
 };
 
-let allDevices = []; // global device list
+let allDevices = [];
 
 window.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("deviceForm");
@@ -58,13 +57,29 @@ window.addEventListener("DOMContentLoaded", () => {
           <span class='badge bg-light text-dark'>${getEmoji(d.usagePattern)} ${d.usagePattern}</span><br>
           <small>${d.devicePower}W • ${d.deviceUsage} hrs/day</small>
         </div>
-        <button class="btn btn-outline-danger btn-sm delete-btn">Delete</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-outline-primary btn-sm edit-btn" data-id="${d.id}">Edit</button>
+          <button class="btn btn-outline-danger btn-sm delete-btn" data-id="${d.id}">Delete</button>
+        </div>
       `;
 
+      // DELETE
       card.querySelector(".delete-btn").addEventListener("click", async () => {
         if (confirm(`Delete ${d.deviceName}?`)) {
           await deleteDoc(doc(db, "devices", d.id));
         }
+      });
+
+      // EDIT
+      card.querySelector(".edit-btn").addEventListener("click", () => {
+        document.getElementById("deviceName").value = d.deviceName;
+        document.getElementById("devicePower").value = d.devicePower;
+        document.getElementById("deviceUsage").value = d.deviceUsage;
+        document.getElementById("usagePattern").value = d.usagePattern;
+        document.getElementById("editingDeviceId").value = d.id;
+        document.querySelector("#deviceForm button[type='submit']").textContent = "Update Device";
+        document.getElementById("formHeader").textContent = "✏️ Edit Device";
+        document.getElementById("deviceSearchInput").value = "";
       });
 
       deviceContainer.appendChild(card);
@@ -96,19 +111,34 @@ window.addEventListener("DOMContentLoaded", () => {
     const devicePower = parseFloat(document.getElementById("devicePower").value);
     const deviceUsage = parseFloat(document.getElementById("deviceUsage").value);
     const usagePattern = document.getElementById("usagePattern").value;
+    const editingId = document.getElementById("editingDeviceId").value;
 
     const user = auth.currentUser;
     if (!user) return;
 
-    await addDoc(collection(db, "devices"), {
-      uid: user.uid,
-      deviceName,
-      devicePower,
-      deviceUsage,
-      usagePattern
-    });
+    if (editingId) {
+      const ref = doc(db, "devices", editingId);
+      await updateDoc(ref, {
+        uid: user.uid,
+        deviceName,
+        devicePower,
+        deviceUsage,
+        usagePattern,
+      });
+    } else {
+      await addDoc(collection(db, "devices"), {
+        uid: user.uid,
+        deviceName,
+        devicePower,
+        deviceUsage,
+        usagePattern
+      });
+    }
 
     form.reset();
+    document.getElementById("editingDeviceId").value = "";
+    document.getElementById("formHeader").textContent = "➕ Add a New Device";
+    document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
   });
 });
 
