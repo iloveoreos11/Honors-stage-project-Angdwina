@@ -1,4 +1,3 @@
-<!-- Paste this in your recommendations.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,11 +42,6 @@
       border-left: 6px solid #1abc9c;
       margin-bottom: 1.2rem;
     }
-    .green-tip {
-      font-size: 0.95rem;
-      color: #28a745;
-      margin-top: 0.5rem;
-    }
   </style>
 </head>
 <body>
@@ -91,15 +85,14 @@
   import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
   const GREEN_ALTERNATIVES = {
-    "Heater": "Close doors and windows to retain heat 🔥",
-    "Electric Heater": "Wear extra layers or use thermal curtains 🧣",
-    "Oven": "Try batch-cooking meals to reduce usage 🍲",
-    "TV": "Turn it off when not watching — background noise isn't worth the energy 📺",
-    "Lights": "Switch to LED bulbs and turn off when leaving a room 💡",
-    "Electric Hob": "Use lids on pots to cook faster and save energy 🥘",
-    "Desktop Computer": "Shut down or sleep mode when not in use 💻",
-    "Kettle": "Only boil the amount of water you need ☕",
-    "Fridge": "Don’t leave the door open — every second counts ❄️"
+    "Electric Heater": "🌿 Try closing windows and using thick curtains to retain heat.",
+    "TV": "📴 Consider turning it off when not in use or switching to a more energy-efficient model.",
+    "Electric Hob": "👩‍🍳 Use a microwave or slow cooker when possible—they use less energy.",
+    "Lights": "💡 Turn off lights when leaving a room and use LED bulbs.",
+    "Refrigerator": "🚪 Keep the door closed and set it to an energy-saving mode.",
+    "Laptop": "🔋 Use battery saver mode and unplug when fully charged.",
+    "Washing Machine": "🌀 Wash full loads and use eco or cold water settings.",
+    "Tumble Dryer": "🌬️ Air-dry clothes when possible instead of using the dryer."
   };
 
   document.getElementById('signOutBtn').addEventListener('click', async (e) => {
@@ -121,37 +114,56 @@
 
     const container = document.getElementById("recommendationTips");
     const CO2_FACTOR = 0.233;
-    const reductionHrs = 1;
 
     snapshot.forEach(doc => {
       const d = doc.data();
-      if (d.deviceUsage > 1) {
-        const dailySaving = (d.devicePower * reductionHrs) / 1000;
-        const monthlySaving = dailySaving * 30;
-        const costPerKwh = d.costPerKwh || 0.34;
-        const costSaved = monthlySaving * costPerKwh;
-        const co2Saved = monthlySaving * CO2_FACTOR;
+      const name = d.deviceName;
+      const usage = d.deviceUsage;
+      const power = d.devicePower;
+      const costPerKwh = d.costPerKwh || 0.34;
 
-        const name = d.deviceName;
-        const lowerName = name.toLowerCase();
-        const matchKey = Object.keys(GREEN_ALTERNATIVES).find(
-          alt => lowerName.includes(alt.toLowerCase())
-        );
-        const altTip = matchKey ? `<p class="green-tip">🌿 Tip: ${GREEN_ALTERNATIVES[matchKey]}</p>` : "";
+      const tip = document.createElement("div");
+      tip.className = "card p-3 tip-card";
 
-        const tip = document.createElement("div");
-        tip.className = "card p-3 tip-card";
+      if (usage > 3) {
+        const reduction = 2;
+        const savings = (power * reduction * 30) / 1000;
+        const costSaved = savings * costPerKwh;
+        const co2Saved = savings * CO2_FACTOR;
+
         tip.innerHTML = `
-          <h5 class="fw-semibold">📦 ${name}</h5>
-          <p>You're using this for <strong>${d.deviceUsage.toFixed(2)} hours/day</strong>. Try reducing usage by <strong>1 hour/day</strong>.</p>
-          <ul class="mb-2">
+          <h5 class="fw-semibold">🔌 ${name}</h5>
+          <p>You're using this <strong>${usage.toFixed(1)} hours/day</strong>. Try cutting back by <strong>2 hours/day</strong> to save energy and money.</p>
+          <ul class="mb-0">
             <li>💸 Save <strong>£${costSaved.toFixed(2)}</strong> per month</li>
-            <li>🌍 Cut <strong>${co2Saved.toFixed(2)} kg</strong> of CO₂ emissions monthly</li>
+            <li>🌍 Reduce <strong>${co2Saved.toFixed(2)} kg</strong> of CO₂ emissions monthly</li>
+            ${GREEN_ALTERNATIVES[name] ? `<li>${GREEN_ALTERNATIVES[name]}</li>` : ""}
           </ul>
-          ${altTip}
         `;
-        container.appendChild(tip);
+      } else if (usage > 1) {
+        const reduction = 1;
+        const savings = (power * reduction * 30) / 1000;
+        const costSaved = savings * costPerKwh;
+        const co2Saved = savings * CO2_FACTOR;
+
+        tip.innerHTML = `
+          <h5 class="fw-semibold">⚡ ${name}</h5>
+          <p>Currently used <strong>${usage.toFixed(1)} hours/day</strong>. A small reduction of <strong>1 hour/day</strong> makes a big difference!</p>
+          <ul class="mb-0">
+            <li>💸 Save <strong>£${costSaved.toFixed(2)}</strong> per month</li>
+            <li>🌍 Lower your footprint by <strong>${co2Saved.toFixed(2)} kg</strong> of CO₂ monthly</li>
+            ${GREEN_ALTERNATIVES[name] ? `<li>${GREEN_ALTERNATIVES[name]}</li>` : ""}
+          </ul>
+        `;
+      } else {
+        tip.innerHTML = `
+          <h5 class="fw-semibold">✅ ${name}</h5>
+          <p><strong>Great job!</strong> You're using this efficiently at only ${usage.toFixed(1)} hours/day.</p>
+          ${GREEN_ALTERNATIVES[name] ? `<p>${GREEN_ALTERNATIVES[name]}</p>` : ""}
+        `;
       }
+
+      container.appendChild(tip);
     });
   });
 </script>
