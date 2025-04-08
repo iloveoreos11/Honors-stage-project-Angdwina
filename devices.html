@@ -2,20 +2,14 @@
 <html lang="en">
 <head>
   <script type="module" src="firebase-config.js"></script>
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Devices</title>
-
-  <!-- Styling & Fonts -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
   <style>
-    html, body {
-      height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column;
-    }
+    html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; }
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(to right, #f8f9fa, #e0eafc); color: #333;
@@ -45,10 +39,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       display: flex; justify-content: space-between; align-items: center;
     }
-    .delete-btn {
-      margin-left: auto; background: none; border: none;
-      color: #999; font-size: 14px; font-weight: 500;
-    }
+    .delete-btn { margin-left: auto; background: none; border: none; color: #999; font-size: 14px; font-weight: 500; }
     .delete-btn:hover { color: #e74c3c; }
     @media (max-width: 768px) {
       .device-card { flex-direction: column; align-items: flex-start; }
@@ -57,13 +48,9 @@
   </style>
 </head>
 <body>
-
 <nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">⚡ Energy Dashboard</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <ul class="navbar-nav gap-3">
         <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
@@ -83,13 +70,13 @@
     </div>
   </div>
 </nav>
-
 <div class="container py-5">
   <div class="row g-4">
     <div class="col-md-6">
       <div class="card p-4">
         <h5 class="mb-3">➕ Add a New Device</h5>
         <form id="deviceForm">
+          <input type="hidden" id="editingDeviceId" />
           <div class="mb-3">
             <label class="form-label">Choose a Device (Auto-fill)</label>
             <input type="text" class="form-control" id="deviceSearchInput" placeholder="Start typing device name..." autocomplete="off">
@@ -125,7 +112,6 @@
         </form>
       </div>
     </div>
-
     <div class="col-md-6">
       <div class="card p-4">
         <h4 class="fw-bold mb-1">🧾 Manage Your Devices</h4>
@@ -142,79 +128,146 @@
     </div>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="save-device.js"></script>
+<script type="module">
+  import { auth, db } from './firebase-config.js';
+  import { collection, getDocs, getDoc, query, where, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
-<!-- Autocomplete logic -->
-<script>
-let deviceList = [];
+  const container = document.getElementById("deviceCardContainer");
+  const form = document.getElementById("deviceForm");
+  const editingDeviceId = document.getElementById("editingDeviceId");
+  const submitBtn = form.querySelector("button[type='submit']");
 
-fetch("https://raw.githubusercontent.com/iloveoreos11/Honors-stage-project-Angdwina/main/uk_household_devices_40.json")
-  .then(res => res.json())
-  .then(data => deviceList = data);
+  let currentUser;
 
-document.getElementById("deviceSearchInput").addEventListener("input", function () {
-  const input = this.value.toLowerCase();
-  const list = document.getElementById("autocompleteList");
-  list.innerHTML = "";
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return window.location.href = "signup.html";
+    currentUser = user;
+    loadDevices();
+  });
 
-  if (input.length === 0) {
-    list.style.display = "none";
-    return;
+  async function loadDevices() {
+    container.innerHTML = "";
+    const q = query(collection(db, "devices"), where("uid", "==", currentUser.uid));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach(docSnap => {
+      const device = docSnap.data();
+      const div = document.createElement("div");
+      div.className = "device-card";
+      div.innerHTML = `
+        <div>
+          <strong>${device.deviceName}</strong><br>
+          ${device.devicePower} W - ${device.deviceUsage} hrs/day
+        </div>
+        <div>
+          <button class="btn btn-sm btn-outline-primary me-2 edit-btn" data-id="${docSnap.id}">Edit</button>
+          <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${docSnap.id}">Delete</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
   }
 
-  const matches = deviceList.filter(d => d.device.toLowerCase().includes(input)).slice(0, 6);
+  container.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("edit-btn")) {
+      const id = e.target.dataset.id;
+      const ref = doc(db, "devices", id);
+      const snap = await getDoc(ref);
+      const data = snap.data();
 
-  if (matches.length === 0) {
-    list.style.display = "none";
-    return;
-  }
+      document.getElementById("deviceName").value = data.deviceName;
+      document.getElementById("devicePower").value = data.devicePower;
+      document.getElementById("deviceUsage").value = data.deviceUsage;
+      document.getElementById("usagePattern").value = data.usagePattern;
+      editingDeviceId.value = id;
+      submitBtn.textContent = "Update Device";
+    }
+    if (e.target.classList.contains("delete-btn")) {
+      const id = e.target.dataset.id;
+      await deleteDoc(doc(db, "devices", id));
+      loadDevices();
+    }
+  });
 
-  list.style.display = "block";
-
-  matches.forEach(match => {
-    const li = document.createElement("li");
-    li.textContent = match.device;
-    li.classList.add("list-group-item", "list-group-item-action");
-    li.style.cursor = "pointer";
-
-    li.onclick = () => {
-      document.getElementById("deviceName").value = match.device;
-      document.getElementById("devicePower").value = match.power_w;
-      document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
-      document.getElementById("usagePattern").value = match.pattern;
-      document.getElementById("deviceSearchInput").value = match.device;
-      list.innerHTML = "";
-      list.style.display = "none";
-      updateEstimates();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = editingDeviceId.value;
+    const ref = id ? doc(db, "devices", id) : null;
+    const payload = {
+      uid: currentUser.uid,
+      deviceName: document.getElementById("deviceName").value,
+      devicePower: parseFloat(document.getElementById("devicePower").value),
+      deviceUsage: parseFloat(document.getElementById("deviceUsage").value),
+      usagePattern: document.getElementById("usagePattern").value,
+      costPerKwh: parseFloat(window.costRate),
+      carbonIntensity: parseFloat(window.carbonRate),
     };
 
-    list.appendChild(li);
-  });
-});
-</script>
+    if (ref) {
+      await updateDoc(ref, payload);
+    }
 
-<!-- 💸 Live estimate logic with Firebase user input -->
+    editingDeviceId.value = "";
+    form.reset();
+    submitBtn.textContent = "Add Device";
+    loadDevices();
+  });
+</script>
+<script>
+  let deviceList = [];
+  fetch("https://raw.githubusercontent.com/iloveoreos11/Honors-stage-project-Angdwina/main/uk_household_devices_40.json")
+    .then(res => res.json())
+    .then(data => deviceList = data);
+
+  document.getElementById("deviceSearchInput").addEventListener("input", function () {
+    const input = this.value.toLowerCase();
+    const list = document.getElementById("autocompleteList");
+    list.innerHTML = "";
+    if (input.length === 0) return list.style.display = "none";
+    const matches = deviceList.filter(d => d.device.toLowerCase().includes(input)).slice(0, 6);
+    if (matches.length === 0) return list.style.display = "none";
+    list.style.display = "block";
+    matches.forEach(match => {
+      const li = document.createElement("li");
+      li.textContent = match.device;
+      li.classList.add("list-group-item", "list-group-item-action");
+      li.style.cursor = "pointer";
+      li.onclick = () => {
+        document.getElementById("deviceName").value = match.device;
+        document.getElementById("devicePower").value = match.power_w;
+        document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
+        document.getElementById("usagePattern").value = match.pattern;
+        document.getElementById("deviceSearchInput").value = match.device;
+        list.innerHTML = "";
+        list.style.display = "none";
+        updateEstimates();
+      };
+      list.appendChild(li);
+    });
+  });
+</script>
 <script type="module">
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
   import { auth, db } from './firebase-config.js';
-
   let costRate = 0.34;
   let carbonRate = 0.233;
-
+  window.costRate = costRate;
+  window.carbonRate = carbonRate;
   const powerInput = document.getElementById("devicePower");
   const usageInput = document.getElementById("deviceUsage");
   const costDisplay = document.getElementById("costEstimate");
   const carbonDisplay = document.getElementById("carbonEstimate");
-
   function updateEstimates() {
     const power = parseFloat(powerInput.value);
     const hours = parseFloat(usageInput.value);
-
     if (!isNaN(power) && !isNaN(hours)) {
       const kWhPerMonth = (power * hours * 30) / 1000;
-      const cost = kWhPerMonth * costRate;
-      const carbon = kWhPerMonth * carbonRate;
-
+      const cost = kWhPerMonth * window.costRate;
+      const carbon = kWhPerMonth * window.carbonRate;
       costDisplay.textContent = "£" + cost.toFixed(2);
       carbonDisplay.textContent = carbon.toFixed(2);
     } else {
@@ -222,42 +275,19 @@ document.getElementById("deviceSearchInput").addEventListener("input", function 
       carbonDisplay.textContent = "0.00";
     }
   }
-
   powerInput.addEventListener("input", updateEstimates);
   usageInput.addEventListener("input", updateEstimates);
-
   onAuthStateChanged(auth, async (user) => {
     if (!user) return window.location.href = "signup.html";
-
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (userDoc.exists()) {
       const data = userDoc.data();
-      costRate = data.costPerKwh ?? 0.34;
-      carbonRate = data.carbonIntensity ?? 0.233;
+      window.costRate = data.costPerKwh ?? 0.34;
+      window.carbonRate = data.carbonIntensity ?? 0.233;
     }
     updateEstimates();
   });
 </script>
-
-<!-- Firebase Auth Redirect -->
-<script type="module">
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { auth } from './firebase-config.js';
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "signup.html";
-    }
-  });
-</script>
-
-<!-- 🔥 Main Firebase device logic -->
-<script type="module" src="save-device.js"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-
 <footer>2025 © Energy Dashboard Limited</footer>
 </body>
 </html>
