@@ -13,51 +13,45 @@ function formatMoney(amount) {
 }
 
 function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent") {
-  const patternMultipliers = {
-    "Always On": 0.35,
-    "Standby": 0.15,
-    "Intermittent": 1.0,
-    "Occasional": 0.5,
-    "Seasonal": 0.25
-  };
-
-  const multiplier = patternMultipliers[pattern] ?? 1.0;
-  const adjustedUsage = usage * multiplier;
-
-  // ❌ Skip Always On devices
-  if (pattern === "Always On") {
-    return `✅ <strong>${device}</strong> runs continuously as expected (Pattern: Always On). No changes recommended. ✅`;
+    const patternMultipliers = {
+      "Always On": 0.35,
+      "Standby": 0.15,
+      "Intermittent": 1.0,
+      "Occasional": 0.5,
+      "Seasonal": 0.25
+    };
+  
+    const multiplier = patternMultipliers[pattern] ?? 1.0;
+    const adjustedUsage = usage * multiplier;
+  
+    if (pattern === "Always On") {
+      return `✅ <strong>${device}</strong> runs continuously as expected (Pattern: Always On). No changes recommended. ✅`;
+    }
+  
+    if (adjustedUsage < 0.5) {
+      return `✅ <strong>${device}</strong> is already efficient at <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
+    }
+  
+    const reduction = Math.min(2, adjustedUsage);  // don't reduce more than what's possible
+    const reducedUsage = adjustedUsage - reduction;
+  
+    const currentKWh = (power * adjustedUsage * 30) / 1000;
+    const reducedKWh = (power * reducedUsage * 30) / 1000;
+    const currentCost = currentKWh * costPerKwh;
+    const reducedCost = reducedKWh * costPerKwh;
+    const savedCost = currentCost - reducedCost;
+    const savedCO2 = (currentKWh - reducedKWh) * CO2_FACTOR;
+  
+    return `
+      🔌 <strong>${device}</strong> is used <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
+      Reducing by <strong>${reduction} hr${reduction > 1 ? "s" : ""}/day</strong> could:
+      <ul>
+        <li>💸 Save <strong>£${savedCost.toFixed(2)}</strong> / month</li>
+        <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
+      </ul>
+    `;
   }
-
-  // ✅ Efficient usage
-  if (adjustedUsage < 0.5) {
-    return `✅ <strong>${device}</strong> is already efficient at <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
-  }
-
-  // Reduce by 2 hours if possible
-  const reducedUsage = adjustedUsage - 2;
-  if (reducedUsage <= 0) return null;
-
-  const originalKWh = (power * adjustedUsage * 30) / 1000;
-  const reducedKWh = (power * reducedUsage * 30) / 1000;
-
-  const originalCost = originalKWh * costPerKwh;
-  const reducedCost = reducedKWh * costPerKwh;
-  const savedCost = originalCost - reducedCost;
-
-  const originalCO2 = originalKWh * CO2_FACTOR;
-  const reducedCO2 = reducedKWh * CO2_FACTOR;
-  const savedCO2 = originalCO2 - reducedCO2;
-
-  return `
-    🔌 <strong>${device}</strong> is used <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).
-    <br>Reducing by <strong>2 hrs/day</strong> could:
-    <ul>
-      <li>💸 Save <strong>${formatMoney(savedCost)}</strong> / month</li>
-      <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
-    </ul>
-  `;
-}
+  
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
