@@ -157,7 +157,7 @@
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+<script type="module" src="save-device.js"></script>
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import { collection, getDocs, getDoc, query, where, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
@@ -378,39 +378,32 @@ const payload = {
   
   
   function updateEstimates() {
+  // Get the power rating and usage (in hours/day)
   const power = parseFloat(document.getElementById("devicePower").value);
   const usage = parseFloat(document.getElementById("deviceUsage").value);
-  const pattern = document.getElementById("usagePattern").value;
 
-  // Define multipliers based on usage pattern
-  const patternMultipliers = {
-  "Always On": 0.35,     // Simulates fridge cycling
-  "Standby": 0.15,       // Low usage (between 0.1 and 0.2)
-  "Intermittent": 1.0,   // Use actual input
-  "Occasional": 0.5,     // Halve the time
-  "Seasonal": 0.25        // We'll handle yearly adjustment separately if needed
-};
-
-
-  const multiplier = patternMultipliers[pattern] ?? 1;
-
+  // Validate if both power and usage are valid numbers
   if (!isNaN(power) && !isNaN(usage)) {
+    // Convert minutes to hours if needed
     const inMinutes = document.getElementById("toggleMinutes").checked;
     const usageInHours = inMinutes ? usage / 60 : usage;
 
-    // Apply the usage pattern multiplier here 💡
-    const kWhPerMonth = (power * usageInHours * 30 * multiplier) / 1000;
+    // Calculate kWh per month (usage in kilowatt-hours)
+    const kWhPerMonth = (power * usageInHours * 30) / 1000;
+
+    // Calculate the cost and CO2 output
     const cost = kWhPerMonth * window.costRate;
     const carbon = kWhPerMonth * window.carbonRate;
 
+    // Display the calculated values
     document.getElementById("costEstimate").textContent = "£" + cost.toFixed(2);
     document.getElementById("carbonEstimate").textContent = carbon.toFixed(2) + " kg/month";
   } else {
+    // Reset the values if input is invalid
     document.getElementById("costEstimate").textContent = "£0.00";
     document.getElementById("carbonEstimate").textContent = "0.00 kg/month";
   }
 }
-
 
   powerInput.addEventListener("input", updateEstimates);
   usageInput.addEventListener("input", updateEstimates);
