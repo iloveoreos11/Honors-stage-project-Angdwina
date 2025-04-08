@@ -23,17 +23,19 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
   
     const multiplier = patternMultipliers[pattern] ?? 1.0;
   
-    // Skip tip for Always On devices
+    // ❌ Skip tips for devices that are always on (like fridges)
     if (pattern === "Always On") {
       return `✅ <strong>${device}</strong> runs continuously as expected (Pattern: Always On). No changes recommended. ✅`;
     }
   
     const adjustedUsage = usage * multiplier;
   
+    // ✅ Already efficient
     if (adjustedUsage < 0.5) {
       return `✅ <strong>${device}</strong> is already efficient at <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
     }
   
+    // Reduce usage by 1 hour (if it doesn't go negative)
     const reducedUsage = adjustedUsage - 1;
     if (reducedUsage <= 0) return null;
   
@@ -41,18 +43,21 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
     const reducedKWh = (power * reducedUsage * 30) / 1000;
   
     const savedKWh = originalKWh - reducedKWh;
-    const savedCost = savedKWh * costPerKwh;
-    const savedCO2 = savedKWh * CO2_FACTOR;
-  
     const maxCost = originalKWh * costPerKwh;
     const maxCO2 = originalKWh * CO2_FACTOR;
+  
+    const rawSavedCost = savedKWh * costPerKwh;
+    const rawSavedCO2 = savedKWh * CO2_FACTOR;
+  
+    const savedCost = Math.min(rawSavedCost, maxCost);
+    const savedCO2 = Math.min(rawSavedCO2, maxCO2);
   
     return `
       ⚡ <strong>${device}</strong> is currently used <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).
       Try reducing by <strong>1 hour/day</strong>:
       <ul>
-        <li>💸 Save ${formatMoney(Math.min(savedCost, maxCost))} / month</li>
-        <li>🌍 Reduce CO₂ by ${Math.min(savedCO2, maxCO2).toFixed(2)} kg / month</li>
+        <li>💸 Save ${formatMoney(savedCost)} / month</li>
+        <li>🌍 Reduce CO₂ by ${savedCO2.toFixed(2)} kg / month</li>
       </ul>
     `;
   }
