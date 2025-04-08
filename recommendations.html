@@ -2,98 +2,33 @@
 <html lang="en">
 <head>
   <script type="module" src="firebase-config.js"></script>
-
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Energy-Saving Recommendations</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recommendations</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
+      background: linear-gradient(to right, #f8f9fa, #e0eafc);
       color: #333;
     }
-
     .navbar {
       background-color: #2c3e50;
     }
-
     .navbar-brand, .nav-link {
       color: white !important;
     }
-
     .nav-link:hover {
       color: #1abc9c !important;
     }
-
     .card {
       border: none;
       border-radius: 20px;
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      transition: 0.3s ease;
-      margin-bottom: 1.5rem;
-    }
-
-    .card:hover {
-      transform: scale(1.01);
-    }
-
-    .recommendation-item {
-      border-bottom: 1px solid #eee;
-      padding-bottom: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .recommendation-item:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-
-    .recommendation-item.completed {
-      opacity: 0.5;
-      text-decoration: line-through;
-    }
-
-    .recommendation-item.saved {
-      border-left: 5px solid #1abc9c;
-      background-color: rgba(26, 188, 156, 0.1);
-    }
-
-    /* Hamburger Menu Icon */
-    .navbar-toggler-icon {
-      background-color: white; /* White color for hamburger lines */
-      width: 30px; /* Adjust width */
-      height: 3px; /* Height of each line */
-      position: relative;
-      transition: 0.3s ease;
-    }
-
-    .navbar-toggler-icon::before,
-    .navbar-toggler-icon::after {
-      content: '';
-      display: block;
-      position: absolute;
-      width: 30px;
-      height: 3px;
-      background-color: white;
-      border-radius: 2px;
-      transition: 0.3s ease;
-    }
-
-    .navbar-toggler-icon::before {
-      top: -8px;
-    }
-
-    .navbar-toggler-icon::after {
-      top: 8px;
-    }
-
-    .navbar-toggler {
-      border: none; /* Remove the border */
-      background: transparent; /* Transparent background */
     }
     footer {
       background-color: #2c3e50;
@@ -103,46 +38,24 @@
       margin-top: 3rem;
       font-size: 1rem;
     }
-    /* Navbar Toggler button for smaller screens */
-    @media (max-width: 768px) {
-      .navbar-toggler-icon {
-        background-color: white; /* Ensure white hamburger icon */
-      }
-
-      .device-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .nav-item {
-        padding: 10px 0;
-      }
-    }
   </style>
-
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">⚡ Energy Dashboard</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <a class="navbar-brand" href="#">💡 Recommendations</a>
+    <div class="collapse navbar-collapse justify-content-end">
       <ul class="navbar-nav gap-3">
         <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="devices.html">Devices</a></li>
         <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
         <li class="nav-item"><a class="nav-link active" href="recommendations.html">Recommendations</a></li>
-        <!-- Account Dropdown -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-user-circle"></i> Account
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-circle"></i> Account</a>
+          <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
-            <li><a class="dropdown-item" href="#">🔓 Sign Out</a></li>
+            <li><a class="dropdown-item" href="#" id="signOutBtn">🔓 Sign Out</a></li>
           </ul>
         </li>
       </ul>
@@ -151,77 +64,73 @@
 </nav>
 
 <div class="container py-5">
-  <h2 class="text-center mb-4">Your Energy-Saving Recommendations</h2>
-
-  <div class="card p-4 mb-4">
-    <h5 class="mb-3">💡 General Tips</h5>
-    <ul class="text-muted mb-0">
-      <li>Turn off unused devices to save standby power.</li>
-      <li>Switch to energy-efficient bulbs and appliances.</li>
-      <li>Unplug chargers when not in use.</li>
-      <li>Consider off-peak hours for heavy appliances.</li>
-    </ul>
-  </div>
-
   <div class="card p-4">
-    <h5 class="mb-3">⚡ Personalized Recommendations</h5>
-    
-    <div class="recommendation-item" id="tip1">
-      <p><strong>Reduce Heater Usage</strong><br>
-      Lower your heater's runtime by 2 hours daily to save an estimated £10/month and reduce your energy consumption by 30 kWh/month.</p>
-      <div class="d-flex gap-2">
-        <button class="btn btn-success btn-sm" onclick="markDone('tip1')">Done</button>
-        <button class="btn btn-outline-primary btn-sm" onclick="markSaved('tip1')">Save</button>
-      </div>
-    </div>
-    
-    <div class="recommendation-item" id="tip2">
-      <p><strong>Switch off Microwave at Night</strong><br>
-      Turning off your microwave when not in use can reduce standby energy consumption and potentially lower your monthly bill by around 10%.</p>
-      <div class="d-flex gap-2">
-        <button class="btn btn-success btn-sm" onclick="markDone('tip2')">Done</button>
-        <button class="btn btn-outline-primary btn-sm" onclick="markSaved('tip2')">Save</button>
-      </div>
-    </div>
-    
-    <div class="recommendation-item" id="tip3">
-      <p><strong>Optimize Kettle Use</strong><br>
-      Use your kettle only when necessary. Reducing its usage by 1 hour per day could save you approximately £5/month.</p>
-      <div class="d-flex gap-2">
-        <button class="btn btn-success btn-sm" onclick="markDone('tip3')">Done</button>
-        <button class="btn btn-outline-primary btn-sm" onclick="markSaved('tip3')">Save</button>
-      </div>
-    </div>
-
+    <h2 class="text-center mb-3">📌 Personalized Energy Tips</h2>
+    <ul class="list-group" id="usageTips"></ul>
   </div>
 </div>
 
-<script>
-  function markDone(id) {
-    const element = document.getElementById(id);
-    element.classList.add('completed');
-  }
-
-  function markSaved(id) {
-    const element = document.getElementById(id);
-    element.classList.add('saved');
-  }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 <footer>
-  2025 ©  Energy Dashboard Limited
+  &copy; 2025 Energy Dashboard. All rights reserved.
 </footer>
-<script type="module">
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { auth } from './firebase-config.js';
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "signup.html"; // redirect to signup if not logged in
+<script type="module">
+  import { auth, db } from './firebase-config.js';
+  import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+  import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+
+  let deviceReference = [];
+  fetch("https://raw.githubusercontent.com/iloveoreos11/Honors-stage-project-Angdwina/main/uk_household_devices_40.json")
+    .then(res => res.json())
+    .then(data => deviceReference = data);
+
+  function getUsageTip(userDevice) {
+    const match = deviceReference.find(ref => ref.device.toLowerCase() === userDevice.deviceName.toLowerCase());
+    if (!match) return null;
+
+    const typical = parseFloat(match.usage_hrs_per_day);
+    const user = parseFloat(userDevice.deviceUsage);
+    if (isNaN(typical) || isNaN(user)) return null;
+
+    if (user > typical * 1.5) {
+      return `⚠️ You're using your ${userDevice.deviceName} about ${(user / typical).toFixed(1)}× more than average. Try reducing usage.`;
     }
+
+    if (user < typical * 0.5) {
+      return `✅ You're using your ${userDevice.deviceName} less than average. Great job!`;
+    }
+
+    return null;
+  }
+
+  document.getElementById('signOutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      await signOut(auth);
+      window.location.href = "signup.html";
+    } catch (err) {
+      alert("Error signing out");
+    }
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return window.location.href = "signup.html";
+    const q = query(collection(db, "devices"), where("uid", "==", user.uid));
+    const snapshot = await getDocs(q);
+
+    const tips = [];
+    snapshot.forEach(docSnap => {
+      const tip = getUsageTip(docSnap.data());
+      if (tip) tips.push(tip);
+    });
+
+    const tipsContainer = document.getElementById("usageTips");
+    tipsContainer.innerHTML = tips.length
+      ? tips.map(t => `<li class="list-group-item">${t}</li>`).join("")
+      : "<li class='list-group-item text-muted'>No tips available. You're doing great!</li>";
   });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
