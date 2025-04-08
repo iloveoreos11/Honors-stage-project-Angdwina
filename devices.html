@@ -74,7 +74,8 @@
   <div class="row g-4">
     <div class="col-md-6">
       <div class="card p-4">
-        <h5 class="mb-3">➕ Add a New Device</h5>
+        <h5 class="mb-3" id="formHeader">➕ Add a New Device</h5>
+
         <form id="deviceForm">
           <input type="hidden" id="editingDeviceId" />
           <div class="mb-3">
@@ -184,7 +185,10 @@
       document.getElementById("usagePattern").value = data.usagePattern;
       editingDeviceId.value = id;
       submitBtn.textContent = "Update Device";
+      document.getElementById("formHeader").textContent = "✏️ Edit Device";
     }
+
+
     if (e.target.classList.contains("delete-btn")) {
       const id = e.target.dataset.id;
       await deleteDoc(doc(db, "devices", id));
@@ -224,6 +228,7 @@
   form.reset();
   editingDeviceId.value = "";
   submitBtn.textContent = "Add Device";
+  document.getElementById("formHeader").textContent = "➕ Add a New Device"; // 👈 this line
   document.getElementById("deviceSearchInput").value = ""; // optional: reset search box
   updateEstimates(); // optional: reset estimates
   loadDevices();
