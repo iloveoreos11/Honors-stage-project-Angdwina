@@ -11,13 +11,14 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/fi
 
 const DEFAULT_CO2_FACTOR = 0.233;
 const DEFAULT_COST_PER_KWH = 0.34;
+
 const tipsContainer = document.getElementById("recommendationTips");
 
 function formatMoney(amount) {
   return "£" + amount.toFixed(2);
 }
 
-function generateTip(device, usage, power, costPerKwh, co2Factor = 0.233, pattern = "Intermittent") {
+function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Intermittent") {
     const patternMultipliers = {
       "Always On": 0.35,
       "Standby": 0.15,
@@ -40,25 +41,25 @@ function generateTip(device, usage, power, costPerKwh, co2Factor = 0.233, patter
     const maxReduction = Math.min(2, adjustedUsage, usage * 0.25);
     if (maxReduction < 0.25) return null;
   
-    // 🔥 Here's the FIXED savings calculation based on proportion:
-    const fullKWh = (power * adjustedUsage * 30) / 1000;
+    // 💡 CORRECT: Calculate full monthly cost from REAL usage (not adjusted)
+    const fullKWh = (power * usage * 30) / 1000;
     const fullCost = fullKWh * costPerKwh;
     const fullCO2 = fullKWh * co2Factor;
   
-    const reductionRatio = maxReduction / adjustedUsage;
-    const savedCost = fullCost * reductionRatio;
-    const savedCO2 = fullCO2 * reductionRatio;
+    // Use actual hours reduced vs original usage
+    const realisticRatio = maxReduction / usage;
+    const savedCost = fullCost * realisticRatio;
+    const savedCO2 = fullCO2 * realisticRatio;
   
     return `
       🔌 <strong>${device}</strong> is used <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
       Reducing by <strong>${maxReduction.toFixed(2)} hr${maxReduction !== 1 ? "s" : ""}/day</strong> could:
       <ul>
-        <li>💸 Save <strong>£${savedCost.toFixed(2)}</strong> / month</li>
+        <li>💸 Save <strong>${formatMoney(savedCost)}</strong> / month</li>
         <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
       </ul>
     `;
   }
-  
   
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
@@ -72,8 +73,8 @@ onAuthStateChanged(auth, async (user) => {
   const snapshot = await getDocs(q);
 
   const tips = [];
-  snapshot.forEach((doc) => {
-    const d = doc.data();
+  snapshot.forEach((docSnap) => {
+    const d = docSnap.data();
     const tip = generateTip(
       d.deviceName,
       parseFloat(d.deviceUsage),
@@ -89,9 +90,7 @@ onAuthStateChanged(auth, async (user) => {
     <div class="card p-4">
       <h4 class="mb-3">💡 Personalized Recommendations</h4>
       <ul class="list-group list-group-flush">
-        ${tips.length > 0
-          ? tips.join('')
-          : '<li class="list-group-item">No tips yet – your usage is already efficient! 🔋✨</li>'}
+        ${tips.length > 0 ? tips.join('') : '<li class="list-group-item">No tips yet – your usage is already efficient! 🔋✨</li>'}
       </ul>
     </div>
   `;
