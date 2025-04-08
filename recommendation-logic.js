@@ -13,35 +13,41 @@ function formatMoney(amount) {
 }
 
 function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent") {
-    const CO2_FACTOR = 0.233;
-  
-    const patternMultipliers = {
-      "Always On": 0.35,
-      "Standby": 0.15,
-      "Intermittent": 1.0,
-      "Occasional": 0.5,
-      "Seasonal": 0.25
-    };
-  
-    const multiplier = patternMultipliers[pattern] ?? 1.0;
-    const adjustedUsage = usage * multiplier;
-  
-    // If adjusted usage is already low, skip tip
-    if (adjustedUsage < 0.5) return null;
-  
-    const originalKWh = (power * adjustedUsage * 30) / 1000;
-    const reducedUsage = adjustedUsage - 1;
-    if (reducedUsage <= 0) return null;
-  
-    const reducedKWh = (power * reducedUsage * 30) / 1000;
-  
-    const savedKWh = originalKWh - reducedKWh;
-    const savedCost = savedKWh * costPerKwh;
-    const savedCO2 = savedKWh * CO2_FACTOR;
-  
-    return `📺 You’re using your <strong>${device}</strong> for <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (pattern: ${pattern}). Try reducing by <strong>1 hour</strong> to save <strong>${formatMoney(savedCost)}</strong> and <strong>${savedCO2.toFixed(2)} kg CO₂/month</strong>. 🌍💸`;
+  const patternMultipliers = {
+    "Always On": 0.35,
+    "Standby": 0.15,
+    "Intermittent": 1.0,
+    "Occasional": 0.5,
+    "Seasonal": 0.25
+  };
+
+  const multiplier = patternMultipliers[pattern] ?? 1.0;
+  const adjustedUsage = usage * multiplier;
+
+  // Skip tips if already super efficient
+  if (adjustedUsage < 0.5) {
+    return `✅ <strong>${device}</strong> is already efficient at <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
   }
-  
+
+  const reducedUsage = adjustedUsage - 1;
+  if (reducedUsage <= 0) return null;
+
+  const originalKWh = (power * adjustedUsage * 30) / 1000;
+  const reducedKWh = (power * reducedUsage * 30) / 1000;
+
+  const savedKWh = originalKWh - reducedKWh;
+  const savedCost = savedKWh * costPerKwh;
+  const savedCO2 = savedKWh * CO2_FACTOR;
+
+  return `
+    ⚡ <strong>${device}</strong> is currently used <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).
+    Try reducing by <strong>1 hour/day</strong>:
+    <ul>
+      <li>💸 Save ${formatMoney(savedCost)} / month</li>
+      <li>🌍 Reduce CO₂ by ${savedCO2.toFixed(2)} kg / month</li>
+    </ul>
+  `;
+}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
@@ -59,11 +65,8 @@ onAuthStateChanged(auth, async (user) => {
       parseFloat(d.costPerKwh || DEFAULT_COST_PER_KWH),
       d.usagePattern || "Intermittent"
     );
-  
-    if (tip) tips.push(`<li class="list-group-item">${tip}</li>`); // 💥 Add this!
+    if (tip) tips.push(`<li class="list-group-item">${tip}</li>`);
   });
-  
-      
 
   tipsContainer.innerHTML = `
     <div class="card p-4">
