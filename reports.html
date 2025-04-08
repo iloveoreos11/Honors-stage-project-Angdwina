@@ -168,10 +168,24 @@
     querySnapshot.forEach((docSnap) => {
       const device = docSnap.data();
       const name = device.deviceName;
+      
       const power = device.devicePower;
-      const usage = device.deviceUsage;
+const usage = device.deviceUsage;
+const pattern = device.usagePattern || "Intermittent";
 
-      const kWhMonth = (power * usage * 30) / 1000;
+const patternMultipliers = {
+  "Always On": 0.35,
+  "Standby": 0.15,
+  "Intermittent": 1.0,
+  "Occasional": 0.5,
+  "Seasonal": 1.0
+};
+
+const adjustedUsage = usage * (patternMultipliers[pattern] ?? 1.0);
+
+const kWhMonth = (power * adjustedUsage * 30) / 1000;
+
+
       const costMonth = kWhMonth * (device.costPerKwh || 0.34);
       const kWhYear = kWhMonth * 12;
       const costYear = costMonth * 12;
