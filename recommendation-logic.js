@@ -32,19 +32,16 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
       return `✅ <strong>${device}</strong> is already efficient at <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
     }
   
-    const reduction = Math.min(2, adjustedUsage);  // don't reduce more than what's possible
-    const reducedUsage = adjustedUsage - reduction;
+    const reduction = Math.min(2, adjustedUsage);
+    if (reduction < 0.1) return null;
   
-    const currentKWh = (power * adjustedUsage * 30) / 1000;
-    const reducedKWh = (power * reducedUsage * 30) / 1000;
-    const currentCost = currentKWh * costPerKwh;
-    const reducedCost = reducedKWh * costPerKwh;
-    const savedCost = currentCost - reducedCost;
-    const savedCO2 = (currentKWh - reducedKWh) * CO2_FACTOR;
+    const savedKWh = (power * reduction * 30) / 1000;
+    const savedCost = savedKWh * costPerKwh;
+    const savedCO2 = savedKWh * CO2_FACTOR;
   
     return `
       🔌 <strong>${device}</strong> is used <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
-      Reducing by <strong>${reduction} hr${reduction > 1 ? "s" : ""}/day</strong> could:
+      Reducing by <strong>${reduction.toFixed(2)} hr${reduction > 1 ? "s" : ""}/day</strong> could:
       <ul>
         <li>💸 Save <strong>£${savedCost.toFixed(2)}</strong> / month</li>
         <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
