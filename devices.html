@@ -321,20 +321,24 @@ const payload = {
 
     // Handle the click event to update fields and dynamically call updateEstimates()
     li.onclick = () => {
-  // Update the form fields with selected device data
   document.getElementById("deviceName").value = match.device;
   document.getElementById("devicePower").value = match.power_w;
   document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
   document.getElementById("usagePattern").value = match.pattern;
   document.getElementById("deviceSearchInput").value = match.device;
 
-  // Hide the autocomplete list and reset its content
+  // 👇 Trigger input events so listeners fire (optional, but helps maintain sync)
+  document.getElementById("devicePower").dispatchEvent(new Event("input"));
+  document.getElementById("deviceUsage").dispatchEvent(new Event("input"));
+
+  // 👇 OR just directly call updateEstimates (you already tried this too)
+  updateEstimates();
+
+  // 👇 Hide the dropdown
   list.innerHTML = "";
   list.style.display = "none";
-
-  // Trigger the dynamic update of estimates after the selection
-  updateEstimates();
 };
+
 
 
     list.appendChild(li);
