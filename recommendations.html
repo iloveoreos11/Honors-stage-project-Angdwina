@@ -23,21 +23,6 @@
     .nav-link:hover {
       color: #1abc9c !important;
     }
-    .card {
-      border: none;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    }
-    .list-group-item {
-      border: none;
-      background-color: #f0f4ff;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      font-weight: 500;
-      padding: 1rem 1.25rem;
-    }
     footer {
       background-color: #2c3e50;
       color: white;
@@ -46,13 +31,24 @@
       margin-top: 3rem;
       font-size: 1rem;
     }
+    .card {
+      border: none;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    .tip-card {
+      border-left: 6px solid #1abc9c;
+      margin-bottom: 1.2rem;
+    }
   </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">✨ Energy Tips</a>
+    <a class="navbar-brand" href="#">💡 Recommendations</a>
     <div class="collapse navbar-collapse justify-content-end">
       <ul class="navbar-nav gap-3">
         <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
@@ -71,18 +67,11 @@
   </div>
 </nav>
 
-<div class="container py-5 text-center" id="signInPrompt" style="display: none;">
-  <div class="card p-5">
-    <h3>Please sign in to view your personalised tips.</h3>
-    <a href="signup.html" class="btn btn-primary mt-3">Go to Sign In</a>
-  </div>
-</div>
-
-<div class="container py-5" id="recommendationSection" style="display: none;">
+<div class="container py-5">
   <div class="card p-4">
-    <h3 class="mb-3 text-center">💡 Personalised Energy Tips</h3>
-    <p class="text-muted text-center">Smart suggestions based on your actual usage.</p>
-    <ul class="list-group" id="tipsList"></ul>
+    <h2 class="text-center mb-3">✨ Personalized Energy Tips</h2>
+    <p class="text-muted text-center mb-4">Suggestions based on your actual energy usage 💭</p>
+    <div id="recommendationTips"></div>
   </div>
 </div>
 
@@ -90,7 +79,57 @@
   &copy; 2025 Energy Dashboard. All rights reserved.
 </footer>
 
-<script type="module" src="recommendation-logic.js"></script>
+<script type="module">
+  import { auth, db } from './firebase-config.js';
+  import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+  import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+
+  document.getElementById('signOutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      await signOut(auth);
+      window.location.href = "signup.html";
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      alert("Error signing out. Please try again.");
+    }
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return window.location.href = "signup.html";
+
+    const q = query(collection(db, "devices"), where("uid", "==", user.uid));
+    const snapshot = await getDocs(q);
+
+    const container = document.getElementById("recommendationTips");
+    const CO2_FACTOR = 0.233;
+    const reductionHrs = 1; // 1 hour per day
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      if (d.deviceUsage > 1) {
+        const dailySaving = (d.devicePower * reductionHrs) / 1000;
+        const monthlySaving = dailySaving * 30;
+        const yearlySaving = monthlySaving * 12;
+        const costPerKwh = d.costPerKwh || 0.34;
+        const costSaved = monthlySaving * costPerKwh;
+        const co2Saved = monthlySaving * CO2_FACTOR;
+
+        const tip = document.createElement("div");
+        tip.className = "card p-3 tip-card";
+        tip.innerHTML = `
+          <h5 class="fw-semibold">📺 ${d.deviceName}</h5>
+          <p>You're using this for <strong>${d.deviceUsage.toFixed(2)} hours/day</strong>. Try reducing usage by <strong>1 hour/day</strong>.</p>
+          <ul class="mb-0">
+            <li>💸 Save <strong>£${costSaved.toFixed(2)}</strong> per month</li>
+            <li>🌍 Cut <strong>${co2Saved.toFixed(2)} kg</strong> of CO₂ emissions monthly</li>
+          </ul>
+        `;
+        container.appendChild(tip);
+      }
+    });
+  });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
