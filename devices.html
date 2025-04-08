@@ -184,6 +184,7 @@ toggle.addEventListener("change", () => {
       usageInput.value = (currentValue / 60).toFixed(2); // Minutes → Hours
     }
   }
+  
 
   usageLabel.textContent = toggle.checked ? "Usage (mins/day)" : "Usage (hrs/day)";
   updateEstimates();
@@ -192,13 +193,7 @@ toggle.addEventListener("change", () => {
 
   
 
-  let currentUser;
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return window.location.href = "signup.html";
-    currentUser = user;
-    loadDevices();
-  });
+ 
   function formatUsage(hours) {
   const totalMins = hours * 60;
   if (totalMins < 1) return "<1 min/day";
@@ -234,7 +229,13 @@ toggle.addEventListener("change", () => {
     container.appendChild(div);
   });
 }
+let currentUser;
 
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return window.location.href = "signup.html";
+  currentUser = user;
+  loadDevices();
+});
   container.addEventListener("click", async (e) => {
     if (e.target.classList.contains("edit-btn")) {
       const id = e.target.dataset.id;
