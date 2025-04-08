@@ -52,14 +52,17 @@ function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Int
     const savedCost = fullCost * realisticRatio;
     const savedCO2 = fullCO2 * realisticRatio;
   
+    const minutes = Math.round(maxReduction * 60);
+
     return `
       🔌 <strong>${device}</strong> is used <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
-      Reducing by <strong>${maxReduction.toFixed(2)} hr${maxReduction !== 1 ? "s" : ""}/day</strong> could:
+      Reducing by <strong>${minutes} minutes/day</strong> could:
       <ul>
         <li>💸 Save <strong>${formatMoney(savedCost)}</strong> / month</li>
         <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
       </ul>
     `;
+    
   }
   
 onAuthStateChanged(auth, async (user) => {
