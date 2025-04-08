@@ -300,32 +300,45 @@ const payload = {
     .then(res => res.json())
     .then(data => deviceList = data);
 
-  document.getElementById("deviceSearchInput").addEventListener("input", function () {
-    const input = this.value.toLowerCase();
-    const list = document.getElementById("autocompleteList");
-    list.innerHTML = "";
-    if (input.length === 0) return list.style.display = "none";
-    const matches = deviceList.filter(d => d.device.toLowerCase().includes(input)).slice(0, 6);
-    if (matches.length === 0) return list.style.display = "none";
-    list.style.display = "block";
-    matches.forEach(match => {
-      const li = document.createElement("li");
-      li.textContent = match.device;
-      li.classList.add("list-group-item", "list-group-item-action");
-      li.style.cursor = "pointer";
-      li.onclick = () => {
-        document.getElementById("deviceName").value = match.device;
-        document.getElementById("devicePower").value = match.power_w;
-        document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
-        document.getElementById("usagePattern").value = match.pattern;
-        document.getElementById("deviceSearchInput").value = match.device;
-        list.innerHTML = "";
-        list.style.display = "none";
-        updateEstimates();
-      };
-      list.appendChild(li);
-    });
+    document.getElementById("deviceSearchInput").addEventListener("input", function () {
+  const input = this.value.toLowerCase();
+  const list = document.getElementById("autocompleteList");
+  list.innerHTML = "";  // Clear previous suggestions
+
+  if (input.length === 0) return list.style.display = "none";
+
+  const matches = deviceList.filter(d => d.device.toLowerCase().includes(input)).slice(0, 6);
+  if (matches.length === 0) return list.style.display = "none";
+
+  list.style.display = "block";
+  
+  // Display matched devices in the dropdown
+  matches.forEach(match => {
+    const li = document.createElement("li");
+    li.textContent = match.device;
+    li.classList.add("list-group-item", "list-group-item-action");
+    li.style.cursor = "pointer";
+
+    // Handle the click event to update fields and dynamically call updateEstimates()
+    li.onclick = () => {
+      document.getElementById("deviceName").value = match.device;
+      document.getElementById("devicePower").value = match.power_w;
+      document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
+      document.getElementById("usagePattern").value = match.pattern;
+      document.getElementById("deviceSearchInput").value = match.device;
+      
+      // Hide the list after selection
+      list.innerHTML = "";
+      list.style.display = "none";
+
+      // Call the function to dynamically update estimates
+      updateEstimates();  // <-- Make sure this is called here!
+    };
+
+    list.appendChild(li);
   });
+});
+
 </script>
 <script type="module">
   import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
