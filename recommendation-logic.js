@@ -17,7 +17,7 @@ function formatMoney(amount) {
   return "£" + amount.toFixed(2);
 }
 
-function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Intermittent") {
+function generateTip(device, usage, power, costPerKwh, co2Factor = 0.233, pattern = "Intermittent") {
     const patternMultipliers = {
       "Always On": 0.35,
       "Standby": 0.15,
@@ -37,16 +37,15 @@ function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Int
       return `✅ <strong>${device}</strong> is already efficient at <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
     }
   
-    const maxReduction = Math.min(2, usage * 0.25); // up to 25% of actual usage or 2 hrs/day
+    const maxReduction = Math.min(2, adjustedUsage, usage * 0.25);
     if (maxReduction < 0.25) return null;
   
-    const reductionRatio = maxReduction / usage;
-  
-    // Use full actual usage to get monthly cost/CO2
-    const fullKWh = (power * usage * 30) / 1000;
+    // 🔥 Here's the FIXED savings calculation based on proportion:
+    const fullKWh = (power * adjustedUsage * 30) / 1000;
     const fullCost = fullKWh * costPerKwh;
     const fullCO2 = fullKWh * co2Factor;
   
+    const reductionRatio = maxReduction / adjustedUsage;
     const savedCost = fullCost * reductionRatio;
     const savedCO2 = fullCO2 * reductionRatio;
   
@@ -54,11 +53,12 @@ function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Int
       🔌 <strong>${device}</strong> is used <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
       Reducing by <strong>${maxReduction.toFixed(2)} hr${maxReduction !== 1 ? "s" : ""}/day</strong> could:
       <ul>
-        <li>💸 Save <strong>${formatMoney(savedCost)}</strong> / month</li>
+        <li>💸 Save <strong>£${savedCost.toFixed(2)}</strong> / month</li>
         <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
       </ul>
     `;
   }
+  
   
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
