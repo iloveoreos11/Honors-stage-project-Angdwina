@@ -4,7 +4,6 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/fi
 
 const CO2_FACTOR = 0.233;
 const DEFAULT_COST_PER_KWH = 0.34;
-
 const tipsContainer = document.getElementById("recommendationTips");
 
 function formatMoney(amount) {
@@ -23,21 +22,21 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
   const multiplier = patternMultipliers[pattern] ?? 1.0;
   const adjustedUsage = usage * multiplier;
 
-  // ❌ Skip unrealistic advice
+  // Skip tips for always-on devices
   if (pattern === "Always On") {
     return `✅ <strong>${device}</strong> runs continuously as expected (Pattern: Always On). No changes recommended. ✅`;
   }
 
-  // ✅ Praise efficient usage
+  // Skip if usage is already low
   if (adjustedUsage < 0.5) {
     return `✅ <strong>${device}</strong> is already efficient at <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
   }
 
-  // 📉 Determine realistic reduction limit
-  const maxReduction = Math.min(2, usage * 0.25);
-  if (maxReduction < 0.25) return null; // Don't show if savings would be too tiny
+  // Use up to 25% of **real usage** or 2 hrs/day max
+  const maxReduction = Math.min(2, adjustedUsage, usage * 0.25);
+  if (maxReduction < 0.25) return null;
 
-  // 🔢 Calculate savings using **real usage reduction**, not adjusted
+  // Use adjusted values for calculations (same as reports)
   const savedKWh = (power * maxReduction * 30) / 1000;
   const savedCost = savedKWh * costPerKwh;
   const savedCO2 = savedKWh * CO2_FACTOR;
