@@ -140,7 +140,7 @@ form?.addEventListener("submit", async (e) => {
       deviceName,
       devicePower,
       deviceUsage,
-      usagePattern
+      usagePattern,
     });
   }
 
