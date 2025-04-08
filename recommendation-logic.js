@@ -1,11 +1,9 @@
-// recommendation-logic.js
 import { auth, db } from './firebase-config.js';
 import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
 const CO2_FACTOR = 0.233;
 const DEFAULT_COST_PER_KWH = 0.34;
-
 const tipsContainer = document.getElementById("recommendationTips");
 
 function formatMoney(amount) {
@@ -24,31 +22,33 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
   const multiplier = patternMultipliers[pattern] ?? 1.0;
   const adjustedUsage = usage * multiplier;
 
-  // Skip tips for Always On devices
+  // Skip tips for always-on devices
   if (pattern === "Always On") {
     return `✅ <strong>${device}</strong> runs continuously as expected (Pattern: Always On). No changes recommended. ✅`;
   }
 
-  // Praise efficient use
+  // Already efficient
   if (adjustedUsage < 0.5) {
-    return `✅ <strong>${device}</strong> is already efficient at <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
+    return `✅ <strong>${device}</strong> is already efficient at ${usage.toFixed(2)} hrs/day (Pattern: ${pattern}). Great job! 🎉`;
   }
 
-  const reduction = Math.min(2, adjustedUsage);
-  if (reduction < 0.1) return null;
+  // Recommend reducing up to 25% of original usage, or max 2 hours
+  const maxReduction = Math.min(2, adjustedUsage, usage * 0.25);
+  if (maxReduction < 0.25) return null;
 
-  const savedKWh = (power * reduction * 30) / 1000;
+  const savedKWh = (power * maxReduction * 30) / 1000;
   const savedCost = savedKWh * costPerKwh;
   const savedCO2 = savedKWh * CO2_FACTOR;
 
   return `
-    🔌 <strong>${device}</strong> is used <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
-    <strong>Adjusted usage:</strong> ${adjustedUsage.toFixed(2)} hrs/day<br>
-    Reducing by <strong>${reduction.toFixed(2)} hr${reduction > 1 ? "s" : ""}/day</strong> could:
-    <ul>
-      <li>💸 Save <strong>${formatMoney(savedCost)}</strong> / month</li>
-      <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
-    </ul>
+    <div class="mb-3">
+      🔌 <strong>${device}</strong> is used <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
+      Reducing by <strong>${maxReduction.toFixed(2)} hr${maxReduction !== 1 ? "s" : ""}/day</strong> could:
+      <ul>
+        <li>💸 Save <strong>${formatMoney(savedCost)}</strong> / month</li>
+        <li>🌍 Reduce CO₂ by <strong>${savedCO2.toFixed(2)} kg</strong> / month</li>
+      </ul>
+    </div>
   `;
 }
 
@@ -68,15 +68,11 @@ onAuthStateChanged(auth, async (user) => {
       parseFloat(d.costPerKwh || DEFAULT_COST_PER_KWH),
       d.usagePattern || "Intermittent"
     );
-    if (tip) tips.push(`<li class="list-group-item">${tip}</li>`);
+    if (tip) tips.push(tip);
   });
 
   tipsContainer.innerHTML = `
-    <div class="card p-4">
-      <h4 class="mb-3">💡 Personalized Recommendations</h4>
-      <ul class="list-group list-group-flush">
-        ${tips.length > 0 ? tips.join('') : '<li class="list-group-item">No tips yet – your usage is already efficient! 🔋✨</li>'}
-      </ul>
-    </div>
+    <h4 class="mb-3">💡 Personalized Recommendations</h4>
+    ${tips.length > 0 ? tips.join('') : '<p>No tips yet – your usage is already efficient! 🔋✨</p>'}
   `;
 });
