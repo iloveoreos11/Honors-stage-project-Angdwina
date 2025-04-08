@@ -250,7 +250,7 @@ onAuthStateChanged(auth, async (user) => {
       document.getElementById("deviceName").value = data.deviceName;
       document.getElementById("devicePower").value = data.devicePower;
 
-      document.getElementById("deviceUsage").value = data.deviceUsage;
+ document.getElementById("deviceUsage").value = data.deviceUsage;
 syncUsageFieldToToggle(); // This handles the toggle nicely
 
       document.getElementById("usagePattern").value = data.usagePattern;
@@ -343,10 +343,7 @@ const payload = {
     li.onclick = () => {
   document.getElementById("deviceName").value = match.device;
   document.getElementById("devicePower").value = match.power_w;
-
   document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
-syncUsageFieldToToggle(); // auto adjust based on toggle
-
   document.getElementById("usagePattern").value = match.pattern;
   document.getElementById("deviceSearchInput").value = match.device;
 
