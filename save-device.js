@@ -106,16 +106,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-
+  
     const deviceName = document.getElementById("deviceName").value;
     const devicePower = parseFloat(document.getElementById("devicePower").value);
     const deviceUsage = parseFloat(document.getElementById("deviceUsage").value);
     const usagePattern = document.getElementById("usagePattern").value;
     const editingId = document.getElementById("editingDeviceId").value;
-
+  
     const user = auth.currentUser;
     if (!user) return;
-
+  
     if (editingId) {
       const ref = doc(db, "devices", editingId);
       await updateDoc(ref, {
@@ -134,12 +134,13 @@ window.addEventListener("DOMContentLoaded", () => {
         usagePattern
       });
     }
-
+  
     form.reset();
     document.getElementById("editingDeviceId").value = "";
     document.getElementById("formHeader").textContent = "➕ Add a New Device";
     document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
   });
+  
 });
 
 function getEmoji(pattern) {
