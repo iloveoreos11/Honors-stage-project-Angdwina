@@ -53,12 +53,16 @@ onAuthStateChanged(auth, async (user) => {
   snapshot.forEach((doc) => {
     const d = doc.data();
     const tip = generateTip(
-        d.deviceName,
-        parseFloat(d.deviceUsage),
-        parseFloat(d.devicePower),
-        parseFloat(d.costPerKwh || DEFAULT_COST_PER_KWH),
-        d.usagePattern || "Intermittent"
-      );
+      d.deviceName,
+      parseFloat(d.deviceUsage),
+      parseFloat(d.devicePower),
+      parseFloat(d.costPerKwh || DEFAULT_COST_PER_KWH),
+      d.usagePattern || "Intermittent"
+    );
+  
+    if (tip) tips.push(`<li class="list-group-item">${tip}</li>`); // 💥 Add this!
+  });
+  
       
 
   tipsContainer.innerHTML = `
