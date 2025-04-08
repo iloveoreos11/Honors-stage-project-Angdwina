@@ -59,7 +59,7 @@
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-circle"></i> Account</a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
-            <li><a class="dropdown-item" href="#">🔓 Sign Out</a></li>
+            <li><a class="dropdown-item" href="#" id="signOutBtn">🔓 Sign Out</a></li>
           </ul>
         </li>
       </ul>
@@ -67,7 +67,14 @@
   </div>
 </nav>
 
-<div class="container py-5">
+<div class="container py-5 text-center" id="signInPrompt" style="display: none;">
+  <div class="card p-5">
+    <h3>Please sign in to view your energy reports.</h3>
+    <a href="signup.html" class="btn btn-primary mt-3">Go to Sign In</a>
+  </div>
+</div>
+
+<div class="container py-5" id="authContent" style="display: none;">
   <div class="card p-4">
     <h2 class="text-center mb-3">📊 Energy Reports</h2>
     <p class="text-muted text-center mb-4">🔁 Click any column heading to sort the table by that value.</p>
@@ -112,90 +119,109 @@
 
 <script type="module">
   import { auth, db } from './firebase-config.js';
-  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
+  import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
   import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const userDevicesRef = collection(db, "devices");
-      const q = query(userDevicesRef, where("uid", "==", user.uid));
-      const querySnapshot = await getDocs(q);
-
-      const CO2_FACTOR = 0.233;
-      let totalKwhMonth = 0, totalCostMonth = 0, totalKwhYear = 0, totalCostYear = 0;
-      let totalCO2Month = 0, totalCO2Year = 0;
-      let mostExpensive = null, leastExpensive = null, highestUsage = null, heavyDevices = [];
-      let highestCO2Month = null, lowestCO2Year = null;
-
-      querySnapshot.forEach((docSnap) => {
-        const device = docSnap.data();
-        const name = device.deviceName;
-        const power = device.devicePower;
-        const usage = device.deviceUsage;
-
-        const kWhMonth = (power * usage * 30) / 1000;
-        const costMonth = kWhMonth * (device.costPerKwh || 0.34);
-        const kWhYear = kWhMonth * 12;
-        const costYear = costMonth * 12;
-
-        const co2Month = kWhMonth * CO2_FACTOR;
-        const co2Year = kWhYear * CO2_FACTOR;
-
-        totalKwhMonth += kWhMonth;
-        totalCostMonth += costMonth;
-        totalKwhYear += kWhYear;
-        totalCostYear += costYear;
-        totalCO2Month += co2Month;
-        totalCO2Year += co2Year;
-
-        if (!mostExpensive || costMonth > mostExpensive.cost) mostExpensive = { name, cost: costMonth };
-        if (!leastExpensive || costMonth < leastExpensive.cost) leastExpensive = { name, cost: costMonth };
-        if (!highestUsage || kWhMonth > highestUsage.kwh) highestUsage = { name, kwh: kWhMonth };
-        if (!highestCO2Month || co2Month > highestCO2Month.co2) highestCO2Month = { name, co2: co2Month };
-        if (!lowestCO2Year || co2Year < lowestCO2Year.co2) lowestCO2Year = { name, co2: co2Year };
-        if (kWhMonth > 50) heavyDevices.push({ name, kwh: kWhMonth });
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${name}</td>
-          <td>${power} W</td>
-          <td>${usage} hrs/day</td>
-          <td>${kWhMonth.toFixed(2)} kWh</td>
-          <td>£${costMonth.toFixed(2)}</td>
-          <td>${kWhYear.toFixed(2)} kWh</td>
-          <td>£${costYear.toFixed(2)}</td>
-          <td>${co2Month.toFixed(2)} kg</td>
-          <td>${co2Year.toFixed(2)} kg</td>
-        `;
-        document.getElementById("deviceReportTable").appendChild(row);
-      });
-
-      document.getElementById("totalKwhMonth").textContent = totalKwhMonth.toFixed(2);
-      document.getElementById("totalCostMonth").textContent = totalCostMonth.toFixed(2);
-      document.getElementById("totalKwhYear").textContent = totalKwhYear.toFixed(2);
-      document.getElementById("totalCostYear").textContent = totalCostYear.toFixed(2);
-      document.getElementById("totalCO2Month").textContent = totalCO2Month.toFixed(2);
-      document.getElementById("totalCO2Year").textContent = totalCO2Year.toFixed(2);
-
-      const insights = document.getElementById("reportInsights");
-      insights.innerHTML = `
-        <div class="card p-4">
-          <h4 class="mb-3">🔍 Report Insights</h4>
-          <ul class="list-group">
-            <li class="list-group-item">🏆 <strong>Most Expensive Device:</strong> ${mostExpensive?.name} (£${mostExpensive.cost.toFixed(2)} / month)</li>
-            <li class="list-group-item">💸 <strong>Least Expensive Device:</strong> ${leastExpensive?.name} (£${leastExpensive.cost.toFixed(2)} / month)</li>
-            <li class="list-group-item">⚡ <strong>Highest Energy Consumer:</strong> ${highestUsage?.name} (${highestUsage.kwh.toFixed(2)} kWh/month)</li>
-            <li class="list-group-item">🏭 <strong>Highest CO₂ (Monthly):</strong> ${highestCO2Month?.name} (${highestCO2Month?.co2.toFixed(2)} kg)</li>
-            <li class="list-group-item">🌱 <strong>Lowest CO₂ (Yearly):</strong> ${lowestCO2Year?.name} (${lowestCO2Year?.co2.toFixed(2)} kg)</li>
-            <li class="list-group-item">🔌 <strong>Devices Using > 50 kWh/month:</strong>
-              <ul class="mt-2">
-                ${heavyDevices.map(d => `<li>${d.name} – ${d.kwh.toFixed(2)} kWh</li>`).join("") || '<li>None</li>'}
-              </ul>
-            </li>
-          </ul>
-        </div>
-      `;
+  document.getElementById('signOutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      await signOut(auth);
+      window.location.href = "signup.html";
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      alert("Error signing out. Please try again.");
     }
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    const authContent = document.getElementById("authContent");
+    const signInPrompt = document.getElementById("signInPrompt");
+
+    if (!user) {
+      signInPrompt.style.display = "block";
+      return;
+    }
+    authContent.style.display = "block";
+
+    // Your existing report logic will run here
+    const userDevicesRef = collection(db, "devices");
+    const q = query(userDevicesRef, where("uid", "==", user.uid));
+    const querySnapshot = await getDocs(q);
+
+    const CO2_FACTOR = 0.233;
+    let totalKwhMonth = 0, totalCostMonth = 0, totalKwhYear = 0, totalCostYear = 0;
+    let totalCO2Month = 0, totalCO2Year = 0;
+    let mostExpensive = null, leastExpensive = null, highestUsage = null, heavyDevices = [];
+    let highestCO2Month = null, lowestCO2Year = null;
+
+    querySnapshot.forEach((docSnap) => {
+      const device = docSnap.data();
+      const name = device.deviceName;
+      const power = device.devicePower;
+      const usage = device.deviceUsage;
+
+      const kWhMonth = (power * usage * 30) / 1000;
+      const costMonth = kWhMonth * (device.costPerKwh || 0.34);
+      const kWhYear = kWhMonth * 12;
+      const costYear = costMonth * 12;
+
+      const co2Month = kWhMonth * CO2_FACTOR;
+      const co2Year = kWhYear * CO2_FACTOR;
+
+      totalKwhMonth += kWhMonth;
+      totalCostMonth += costMonth;
+      totalKwhYear += kWhYear;
+      totalCostYear += costYear;
+      totalCO2Month += co2Month;
+      totalCO2Year += co2Year;
+
+      if (!mostExpensive || costMonth > mostExpensive.cost) mostExpensive = { name, cost: costMonth };
+      if (!leastExpensive || costMonth < leastExpensive.cost) leastExpensive = { name, cost: costMonth };
+      if (!highestUsage || kWhMonth > highestUsage.kwh) highestUsage = { name, kwh: kWhMonth };
+      if (!highestCO2Month || co2Month > highestCO2Month.co2) highestCO2Month = { name, co2: co2Month };
+      if (!lowestCO2Year || co2Year < lowestCO2Year.co2) lowestCO2Year = { name, co2: co2Year };
+      if (kWhMonth > 50) heavyDevices.push({ name, kwh: kWhMonth });
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${name}</td>
+        <td>${power} W</td>
+        <td>${usage} hrs/day</td>
+        <td>${kWhMonth.toFixed(2)} kWh</td>
+        <td>£${costMonth.toFixed(2)}</td>
+        <td>${kWhYear.toFixed(2)} kWh</td>
+        <td>£${costYear.toFixed(2)}</td>
+        <td>${co2Month.toFixed(2)} kg</td>
+        <td>${co2Year.toFixed(2)} kg</td>
+      `;
+      document.getElementById("deviceReportTable").appendChild(row);
+    });
+
+    document.getElementById("totalKwhMonth").textContent = totalKwhMonth.toFixed(2);
+    document.getElementById("totalCostMonth").textContent = totalCostMonth.toFixed(2);
+    document.getElementById("totalKwhYear").textContent = totalKwhYear.toFixed(2);
+    document.getElementById("totalCostYear").textContent = totalCostYear.toFixed(2);
+    document.getElementById("totalCO2Month").textContent = totalCO2Month.toFixed(2);
+    document.getElementById("totalCO2Year").textContent = totalCO2Year.toFixed(2);
+
+    const insights = document.getElementById("reportInsights");
+    insights.innerHTML = `
+      <div class="card p-4">
+        <h4 class="mb-3">🔍 Report Insights</h4>
+        <ul class="list-group">
+          <li class="list-group-item">🏆 <strong>Most Expensive Device:</strong> ${mostExpensive?.name} (£${mostExpensive.cost.toFixed(2)} / month)</li>
+          <li class="list-group-item">💸 <strong>Least Expensive Device:</strong> ${leastExpensive?.name} (£${leastExpensive.cost.toFixed(2)} / month)</li>
+          <li class="list-group-item">⚡ <strong>Highest Energy Consumer:</strong> ${highestUsage?.name} (${highestUsage.kwh.toFixed(2)} kWh/month)</li>
+          <li class="list-group-item">🏭 <strong>Highest CO₂ (Monthly):</strong> ${highestCO2Month?.name} (${highestCO2Month?.co2.toFixed(2)} kg)</li>
+          <li class="list-group-item">🌱 <strong>Lowest CO₂ (Yearly):</strong> ${lowestCO2Year?.name} (${lowestCO2Year?.co2.toFixed(2)} kg)</li>
+          <li class="list-group-item">🔌 <strong>Devices Using > 50 kWh/month:</strong>
+            <ul class="mt-2">
+              ${heavyDevices.map(d => `<li>${d.name} – ${d.kwh.toFixed(2)} kWh</li>`).join("") || '<li>None</li>'}
+            </ul>
+          </li>
+        </ul>
+      </div>
+    `;
   });
 </script>
 
