@@ -35,8 +35,13 @@ function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Int
     }
   
     if (adjustedUsage < 0.5) {
-      return `✅ <strong>${device}</strong> is already efficient at <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
+
+        const usageDisplay = usage < 1 ? `${Math.round(usage * 60)} minute${Math.round(usage * 60) !== 1 ? "s" : ""}/day` : `${usage.toFixed(2)} hrs/day`;
+        return `✅ <strong>${device}</strong> is already efficient at <strong>${usageDisplay}</strong> (Pattern: ${pattern}). Great job! 🎉`;
+        
+    
     }
+
   
     const maxReduction = Math.min(2, adjustedUsage * 0.25);
 
