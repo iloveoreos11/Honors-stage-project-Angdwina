@@ -23,44 +23,44 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
   
     const multiplier = patternMultipliers[pattern] ?? 1.0;
   
-    // ❌ Skip tips for devices that are always on (like fridges)
+    // Skip tips for Always On devices
     if (pattern === "Always On") {
       return `✅ <strong>${device}</strong> runs continuously as expected (Pattern: Always On). No changes recommended. ✅`;
     }
   
     const adjustedUsage = usage * multiplier;
   
-    // ✅ Already efficient
+    // Already efficient
     if (adjustedUsage < 0.5) {
       return `✅ <strong>${device}</strong> is already efficient at <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
     }
   
-    // Reduce usage by 1 hour (if it doesn't go negative)
+    // If reducing by 1 hour/day would go below zero, skip
     const reducedUsage = adjustedUsage - 1;
     if (reducedUsage <= 0) return null;
   
-    const originalKWh = (power * adjustedUsage * 30) / 1000;
+    const currentKWh = (power * adjustedUsage * 30) / 1000;
     const reducedKWh = (power * reducedUsage * 30) / 1000;
   
-    const savedKWh = originalKWh - reducedKWh;
-    const maxCost = originalKWh * costPerKwh;
-    const maxCO2 = originalKWh * CO2_FACTOR;
+    const currentCost = currentKWh * costPerKwh;
+    const reducedCost = reducedKWh * costPerKwh;
+    const savedCost = currentCost - reducedCost;
   
-    const rawSavedCost = savedKWh * costPerKwh;
-    const rawSavedCO2 = savedKWh * CO2_FACTOR;
-  
-    const savedCost = Math.min(rawSavedCost, maxCost);
-    const savedCO2 = Math.min(rawSavedCO2, maxCO2);
+    const currentCO2 = currentKWh * CO2_FACTOR;
+    const reducedCO2 = reducedKWh * CO2_FACTOR;
+    const savedCO2 = currentCO2 - reducedCO2;
   
     return `
       ⚡ <strong>${device}</strong> is currently used <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).
-      Try reducing by <strong>1 hour/day</strong>:
+      <br>Reducing to <strong>${reducedUsage.toFixed(2)} hrs/day</strong> can:
       <ul>
-        <li>💸 Save ${formatMoney(savedCost)} / month</li>
-        <li>🌍 Reduce CO₂ by ${savedCO2.toFixed(2)} kg / month</li>
+        <li>💸 Drop monthly cost from <strong>${formatMoney(currentCost)}</strong> ➝ <strong>${formatMoney(reducedCost)}</strong></li>
+        <li>🌍 Cut CO₂ from <strong>${currentCO2.toFixed(2)} kg</strong> ➝ <strong>${reducedCO2.toFixed(2)} kg</strong></li>
+        <li>✅ <strong>You save:</strong> ${formatMoney(savedCost)} & ${savedCO2.toFixed(2)} kg CO₂/month</li>
       </ul>
     `;
   }
+  
   
 
 onAuthStateChanged(auth, async (user) => {
