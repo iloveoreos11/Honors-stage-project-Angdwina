@@ -38,7 +38,8 @@ function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Int
       return `✅ <strong>${device}</strong> is already efficient at <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
     }
   
-    const maxReduction = Math.min(2, adjustedUsage, usage * 0.25);
+    const maxReduction = Math.min(2, adjustedUsage * 0.25);
+
     if (maxReduction < 0.25) return null;
   
     // 💡 CORRECT: Calculate full monthly cost from REAL usage (not adjusted)
