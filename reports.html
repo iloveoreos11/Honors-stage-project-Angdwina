@@ -149,6 +149,17 @@
     const querySnapshot = await getDocs(q);
 
     const CO2_FACTOR = 0.233;
+    function formatUsage(hours) {
+  const totalMins = Math.round(hours * 60);
+  if (totalMins < 1) return "<1 min/day";
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+
+  if (hrs === 0) return `${mins} min${mins !== 1 ? "s" : ""}/day`;
+  if (mins === 0) return `${hrs} hr${hrs !== 1 ? "s" : ""}/day`;
+  return `${hrs} hr${hrs !== 1 ? "s" : ""} ${mins} min${mins !== 1 ? "s" : ""}/day`;
+}
+
     let totalKwhMonth = 0, totalCostMonth = 0, totalKwhYear = 0, totalCostYear = 0;
     let totalCO2Month = 0, totalCO2Year = 0;
     let mostExpensive = null, leastExpensive = null, highestUsage = null, heavyDevices = [];
@@ -186,7 +197,8 @@
       row.innerHTML = `
         <td>${name}</td>
         <td>${power} W</td>
-        <td>${usage} hrs/day</td>
+        <td>${formatUsage(usage)}</td>
+
         <td>${kWhMonth.toFixed(2)} kWh</td>
         <td>£${costMonth.toFixed(2)}</td>
         <td>${kWhYear.toFixed(2)} kWh</td>
