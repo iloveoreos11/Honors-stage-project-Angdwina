@@ -30,6 +30,14 @@
       backdrop-filter: blur(12px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
+    .list-group-item {
+      border: none;
+      background-color: #f0f4ff;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-weight: 500;
+      padding: 1rem 1.25rem;
+    }
     footer {
       background-color: #2c3e50;
       color: white;
@@ -44,7 +52,7 @@
 
 <nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">💡 Recommendations</a>
+    <a class="navbar-brand" href="#">✨ Energy Tips</a>
     <div class="collapse navbar-collapse justify-content-end">
       <ul class="navbar-nav gap-3">
         <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
@@ -63,10 +71,18 @@
   </div>
 </nav>
 
-<div class="container py-5">
+<div class="container py-5 text-center" id="signInPrompt" style="display: none;">
+  <div class="card p-5">
+    <h3>Please sign in to view your personalised tips.</h3>
+    <a href="signup.html" class="btn btn-primary mt-3">Go to Sign In</a>
+  </div>
+</div>
+
+<div class="container py-5" id="recommendationSection" style="display: none;">
   <div class="card p-4">
-    <h2 class="text-center mb-3">📌 Personalized Energy Tips</h2>
-    <ul class="list-group" id="usageTips"></ul>
+    <h3 class="mb-3 text-center">💡 Personalised Energy Tips</h3>
+    <p class="text-muted text-center">Smart suggestions based on your actual usage.</p>
+    <ul class="list-group" id="tipsList"></ul>
   </div>
 </div>
 
@@ -74,63 +90,7 @@
   &copy; 2025 Energy Dashboard. All rights reserved.
 </footer>
 
-<script type="module">
-  import { auth, db } from './firebase-config.js';
-  import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-  import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
-
-  let deviceReference = [];
-  fetch("https://raw.githubusercontent.com/iloveoreos11/Honors-stage-project-Angdwina/main/uk_household_devices_40.json")
-    .then(res => res.json())
-    .then(data => deviceReference = data);
-
-  function getUsageTip(userDevice) {
-    const match = deviceReference.find(ref => ref.device.toLowerCase() === userDevice.deviceName.toLowerCase());
-    if (!match) return null;
-
-    const typical = parseFloat(match.usage_hrs_per_day);
-    const user = parseFloat(userDevice.deviceUsage);
-    if (isNaN(typical) || isNaN(user)) return null;
-
-    if (user > typical * 1.5) {
-      return `⚠️ You're using your ${userDevice.deviceName} about ${(user / typical).toFixed(1)}× more than average. Try reducing usage.`;
-    }
-
-    if (user < typical * 0.5) {
-      return `✅ You're using your ${userDevice.deviceName} less than average. Great job!`;
-    }
-
-    return null;
-  }
-
-  document.getElementById('signOutBtn').addEventListener('click', async (e) => {
-    e.preventDefault();
-    try {
-      await signOut(auth);
-      window.location.href = "signup.html";
-    } catch (err) {
-      alert("Error signing out");
-    }
-  });
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return window.location.href = "signup.html";
-    const q = query(collection(db, "devices"), where("uid", "==", user.uid));
-    const snapshot = await getDocs(q);
-
-    const tips = [];
-    snapshot.forEach(docSnap => {
-      const tip = getUsageTip(docSnap.data());
-      if (tip) tips.push(tip);
-    });
-
-    const tipsContainer = document.getElementById("usageTips");
-    tipsContainer.innerHTML = tips.length
-      ? tips.map(t => `<li class="list-group-item">${t}</li>`).join("")
-      : "<li class='list-group-item text-muted'>No tips available. You're doing great!</li>";
-  });
-</script>
-
+<script type="module" src="recommendation-logic.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
