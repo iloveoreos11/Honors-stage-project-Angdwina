@@ -112,9 +112,16 @@
             <input type="number" class="form-control" id="devicePower" placeholder="e.g., 1500" step="1" min="0">
           </div>
           <div class="mb-3">
-            <label class="form-label">Usage (hrs/day)</label>
+            <label class="form-label" id="usageLabel">Usage (hrs/day)</label>
             <input type="number" class="form-control" id="deviceUsage" placeholder="e.g., 4" step="0.1" min="0" inputmode="decimal">
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" id="toggleMinutes">
+              <label class="form-check-label" for="toggleMinutes">
+                Enter in minutes instead
+              </label>
+            </div>
           </div>
+          
           <div class="mb-3">
             <label class="form-label">Usage Pattern</label>
             <select class="form-select" id="usagePattern">
@@ -160,6 +167,30 @@
   const form = document.getElementById("deviceForm");
   const editingDeviceId = document.getElementById("editingDeviceId");
   const submitBtn = form.querySelector("button[type='submit']");
+
+// Declare usageInput once at the top
+const usageInput = document.getElementById("deviceUsage");
+const toggle = document.getElementById("toggleMinutes");
+const usageLabel = document.getElementById("usageLabel");
+
+// 🎯 Toggle for Hours <-> Minutes
+toggle.addEventListener("change", () => {
+  const currentValue = parseFloat(usageInput.value);
+
+  if (!isNaN(currentValue)) {
+    if (toggle.checked) {
+      usageInput.value = (currentValue * 60).toFixed(0); // Hours → Minutes
+    } else {
+      usageInput.value = (currentValue / 60).toFixed(2); // Minutes → Hours
+    }
+  }
+
+  usageLabel.textContent = toggle.checked ? "Usage (mins/day)" : "Usage (hrs/day)";
+  updateEstimates();
+});
+
+
+  
 
   let currentUser;
 
@@ -220,17 +251,23 @@
   e.preventDefault();
 
   const id = editingDeviceId.value;
-  const isEditing = Boolean(id);
+const isEditing = Boolean(id);
 
-  const payload = {
-    uid: currentUser.uid,
-    deviceName: document.getElementById("deviceName").value,
-    devicePower: parseFloat(document.getElementById("devicePower").value),
-    deviceUsage: parseFloat(document.getElementById("deviceUsage").value),
-    usagePattern: document.getElementById("usagePattern").value,
-    costPerKwh: parseFloat(window.costRate),
-    carbonIntensity: parseFloat(window.carbonRate),
-  };
+// 👇 Convert minutes to hours if checkbox is checked
+let usage = parseFloat(document.getElementById("deviceUsage").value);
+const inMinutes = document.getElementById("toggleMinutes").checked;
+if (inMinutes) usage = usage / 60;
+
+const payload = {
+  uid: currentUser.uid,
+  deviceName: document.getElementById("deviceName").value,
+  devicePower: parseFloat(document.getElementById("devicePower").value),
+  deviceUsage: usage,
+  usagePattern: document.getElementById("usagePattern").value,
+  costPerKwh: parseFloat(window.costRate),
+  carbonIntensity: parseFloat(window.carbonRate),
+};
+
 
   if (!payload.deviceName || isNaN(payload.devicePower) || isNaN(payload.deviceUsage)) {
     alert("Please fill out all fields correctly.");
@@ -299,14 +336,20 @@
   window.costRate = costRate;
   window.carbonRate = carbonRate;
   const powerInput = document.getElementById("devicePower");
-  const usageInput = document.getElementById("deviceUsage");
+  //const usageInput = document.getElementById("deviceUsage");
   const costDisplay = document.getElementById("costEstimate");
   const carbonDisplay = document.getElementById("carbonEstimate");
   function updateEstimates() {
     const power = parseFloat(powerInput.value);
-    const hours = parseFloat(usageInput.value);
-    if (!isNaN(power) && !isNaN(hours)) {
-      const kWhPerMonth = (power * hours * 30) / 1000;
+
+
+    const rawUsage = parseFloat(usageInput.value);
+const inMinutes = document.getElementById("toggleMinutes")?.checked;
+const usage = inMinutes ? rawUsage / 60 : rawUsage;
+
+if (!isNaN(power) && !isNaN(usage)) {
+  const kWhPerMonth = (power * usage * 30) / 1000;
+
       const cost = kWhPerMonth * window.costRate;
       const carbon = kWhPerMonth * window.carbonRate;
       costDisplay.textContent = "£" + cost.toFixed(2);
