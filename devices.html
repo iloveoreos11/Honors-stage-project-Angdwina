@@ -1,4 +1,3 @@
-<!-- ✅ Copy & Paste this into your devices.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,12 +9,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+
+.device-card > div {
+  flex: 1;
+}
+
+.device-card button {
+  white-space: nowrap;
+}
+
     html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; }
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(to right, #f8f9fa, #e0eafc); color: #333;
     }
     .container { flex: 1; }
+    #autocompleteList {
+      display: none; position: absolute; z-index: 999;
+      background: white; width: 100%; border: 1px solid #ccc; border-radius: 6px;
+    }
     .navbar { background-color: #2c3e50; }
     .navbar-brand, .nav-link { color: white !important; }
     .nav-link:hover { color: #1abc9c !important; }
@@ -30,36 +42,29 @@
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
     .device-card {
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 10px;
+      flex-direction: row; flex-wrap: wrap; gap: 10px;
       background: white; border-radius: 16px; padding: 1rem;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1.2rem; margin-top: 0.5rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      display: flex; justify-content: space-between; align-items: center;
     }
     .delete-btn {
-      margin-left: auto;
-      background-color: transparent;
-      border: 1px solid #e74c3c;
-      color: #e74c3c;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 6px 12px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-    }
-    .delete-btn:hover {
-      background-color: #e74c3c;
-      color: white;
-    }
-    #autocompleteList {
-      display: none;
-      position: absolute;
-      z-index: 999;
-      background: white;
-      width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
+  margin-left: auto;
+  background-color: transparent;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #e74c3c;
+  color: white;
+}
+
   </style>
 </head>
 <body>
@@ -85,12 +90,12 @@
     </div>
   </div>
 </nav>
-
 <div class="container py-5">
   <div class="row g-4">
     <div class="col-md-6">
       <div class="card p-4">
         <h5 class="mb-3" id="formHeader">➕ Add a New Device</h5>
+
         <form id="deviceForm">
           <input type="hidden" id="editingDeviceId" />
           <div class="mb-3">
@@ -108,12 +113,15 @@
           </div>
           <div class="mb-3">
             <label class="form-label" id="usageLabel">Usage (hrs/day)</label>
-            <input type="number" class="form-control" id="deviceUsage" placeholder="e.g., 4" step="0.1" min="0">
+            <input type="number" class="form-control" id="deviceUsage" placeholder="e.g., 4" step="0.1" min="0" inputmode="decimal">
             <div class="form-check mt-2">
               <input class="form-check-input" type="checkbox" id="toggleMinutes">
-              <label class="form-check-label" for="toggleMinutes">Enter in minutes instead</label>
+              <label class="form-check-label" for="toggleMinutes">
+                Enter in minutes instead
+              </label>
             </div>
           </div>
+          
           <div class="mb-3">
             <label class="form-label">Usage Pattern</label>
             <select class="form-select" id="usagePattern">
@@ -148,8 +156,7 @@
     </div>
   </div>
 </div>
-
-<!-- Firebase + Logic (leave this as is) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module" src="save-device.js"></script>
 <script type="module">
   import { auth, db } from './firebase-config.js';
@@ -157,83 +164,258 @@
   import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
   const container = document.getElementById("deviceCardContainer");
-  const toggle = document.getElementById("toggleMinutes");
-  const usageLabel = document.getElementById("usageLabel");
-  const powerInput = document.getElementById("devicePower");
-  const usageInput = document.getElementById("deviceUsage");
+  const form = document.getElementById("deviceForm");
+  const editingDeviceId = document.getElementById("editingDeviceId");
+  const submitBtn = form.querySelector("button[type='submit']");
 
-  toggle.addEventListener("change", () => {
-    const currentValue = parseFloat(usageInput.value);
-    if (!isNaN(currentValue)) {
-      usageInput.value = toggle.checked ? (currentValue * 60).toFixed(0) : (currentValue / 60).toFixed(2);
+// Declare usageInput once at the top
+//const usageInput = document.getElementById("deviceUsage");
+const toggle = document.getElementById("toggleMinutes");
+const usageLabel = document.getElementById("usageLabel");
+
+// 🎯 Toggle for Hours <-> Minutes
+toggle.addEventListener("change", () => {
+  const currentValue = parseFloat(usageInput.value);
+
+  if (!isNaN(currentValue)) {
+    if (toggle.checked) {
+      usageInput.value = (currentValue * 60).toFixed(0); // Hours → Minutes
+    } else {
+      usageInput.value = (currentValue / 60).toFixed(2); // Minutes → Hours
     }
-    usageLabel.textContent = toggle.checked ? "Usage (mins/day)" : "Usage (hrs/day)";
-    updateEstimates();
-  });
-
-  function formatUsage(hours) {
-    const totalMins = hours * 60;
-    if (totalMins < 1) return "<1 min/day";
-    if (totalMins < 60) return `${Math.round(totalMins)} mins/day`;
-    const hrs = Math.floor(totalMins / 60);
-    const mins = Math.round(totalMins % 60);
-    if (mins === 0) return `${hrs} hr${hrs > 1 ? "s" : ""}/day`;
-    return `${hrs} hr${hrs > 1 ? "s" : ""} ${mins} min${mins > 1 ? "s" : ""}/day`;
   }
+  
 
-  let currentUser;
+  usageLabel.textContent = toggle.checked ? "Usage (mins/day)" : "Usage (hrs/day)";
+  updateEstimates();
+});
+
+
+  
+
+ 
+function formatUsage(hours) {
+  const totalMins = Math.round(hours * 60);
+  if (totalMins < 1) return "<1 min/day";
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+
+  if (hrs === 0) return `${mins} min${mins !== 1 ? "s" : ""}/day`;
+  if (mins === 0) return `${hrs} hr${hrs !== 1 ? "s" : ""}/day`;
+  return `${hrs} hr${hrs !== 1 ? "s" : ""} ${mins} min${mins !== 1 ? "s" : ""}/day`;
+}
+
 
   async function loadDevices() {
-    container.innerHTML = "";
-    const q = query(collection(db, "devices"), where("uid", "==", currentUser.uid));
-    const querySnapshot = await getDocs(q);
+  container.innerHTML = "";
+  const q = query(collection(db, "devices"), where("uid", "==", currentUser.uid));
+  const querySnapshot = await getDocs(q);
 
-    querySnapshot.forEach(docSnap => {
-      const device = docSnap.data();
-      const div = document.createElement("div");
-      div.className = "device-card";
-      div.innerHTML = `
-        <div>
-          <strong>${device.deviceName}</strong><br>
-          ${device.devicePower}W • ${formatUsage(device.deviceUsage)}
-        </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-sm btn-outline-primary me-2 edit-btn" data-id="${docSnap.id}">Edit</button>
-          <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${docSnap.id}">Delete</button>
-        </div>
-      `;
-      container.appendChild(div);
-    });
-  }
+  querySnapshot.forEach(docSnap => {
+    const device = docSnap.data();
+    const div = document.createElement("div");
+    div.className = "device-card";
+    div.innerHTML = `
+      <div>
+        <strong>${device.deviceName}</strong><br>
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return window.location.href = "signup.html";
-    currentUser = user;
-    loadDevices();
+        ${device.devicePower}W • ${formatUsage(device.deviceUsage)}
+ 
+
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-sm btn-outline-primary me-2 edit-btn" data-id="${docSnap.id}">Edit</button>
+        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${docSnap.id}">Delete</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+let currentUser;
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return window.location.href = "signup.html";
+  currentUser = user;
+  loadDevices();
+});
+  container.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("edit-btn")) {
+      const id = e.target.dataset.id;
+      const ref = doc(db, "devices", id);
+      const snap = await getDoc(ref);
+      const data = snap.data();
+
+      document.getElementById("deviceName").value = data.deviceName;
+      document.getElementById("devicePower").value = data.devicePower;
+      document.getElementById("deviceUsage").value = data.deviceUsage;
+      document.getElementById("usagePattern").value = data.usagePattern;
+      editingDeviceId.value = id;
+      submitBtn.textContent = "Update Device";
+      document.getElementById("formHeader").textContent = "✏️ Edit Device";
+    }
+
+
+    if (e.target.classList.contains("delete-btn")) {
+      const id = e.target.dataset.id;
+      await deleteDoc(doc(db, "devices", id));
+      loadDevices();
+    }
   });
 
-  function updateEstimates() {
-    const power = parseFloat(powerInput.value);
-    const usage = parseFloat(usageInput.value);
-    const inMinutes = toggle.checked;
-    const usageInHours = inMinutes ? usage / 60 : usage;
-    const costEstimate = document.getElementById("costEstimate");
-    const carbonEstimate = document.getElementById("carbonEstimate");
+  form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    if (!isNaN(power) && !isNaN(usage)) {
-      const kWhPerMonth = (power * usageInHours * 30) / 1000;
-      costEstimate.textContent = "£" + (kWhPerMonth * (window.costRate ?? 0.34)).toFixed(2);
-      carbonEstimate.textContent = (kWhPerMonth * (window.carbonRate ?? 0.233)).toFixed(2) + " kg/month";
-    } else {
-      costEstimate.textContent = "£0.00";
-      carbonEstimate.textContent = "0.00 kg/month";
-    }
+  const id = editingDeviceId.value;
+const isEditing = Boolean(id);
+
+// 👇 Convert minutes to hours if checkbox is checked
+let usage = parseFloat(document.getElementById("deviceUsage").value);
+const inMinutes = document.getElementById("toggleMinutes").checked;
+if (inMinutes) usage = usage / 60;
+
+const payload = {
+  uid: currentUser.uid,
+  deviceName: document.getElementById("deviceName").value,
+  devicePower: parseFloat(document.getElementById("devicePower").value),
+  deviceUsage: usage,
+  usagePattern: document.getElementById("usagePattern").value,
+  costPerKwh: parseFloat(window.costRate),
+  carbonIntensity: parseFloat(window.carbonRate),
+};
+
+
+  if (!payload.deviceName || isNaN(payload.devicePower) || isNaN(payload.deviceUsage)) {
+    alert("Please fill out all fields correctly.");
+    return;
   }
+
+  if (isEditing) {
+    const ref = doc(db, "devices", id);
+    await updateDoc(ref, payload);
+  } else {
+    const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+    await addDoc(collection(db, "devices"), payload);
+  }
+
+  form.reset();
+  editingDeviceId.value = "";
+  submitBtn.textContent = "Add Device";
+  document.getElementById("formHeader").textContent = "➕ Add a New Device"; // 👈 this line
+  document.getElementById("deviceSearchInput").value = ""; // optional: reset search box
+  updateEstimates(); // optional: reset estimates
+  loadDevices();
+});
+
+
+
+</script>
+<script>
+  let deviceList = [];
+  fetch("https://raw.githubusercontent.com/iloveoreos11/Honors-stage-project-Angdwina/main/uk_household_devices_40.json")
+    .then(res => res.json())
+    .then(data => deviceList = data);
+
+    document.getElementById("deviceSearchInput").addEventListener("input", function () {
+  const input = this.value.toLowerCase();
+  const list = document.getElementById("autocompleteList");
+  list.innerHTML = "";  // Clear previous suggestions
+
+  if (input.length === 0) return list.style.display = "none";
+
+  const matches = deviceList.filter(d => d.device.toLowerCase().includes(input)).slice(0, 6);
+  if (matches.length === 0) return list.style.display = "none";
+
+  list.style.display = "block";
+  
+  // Display matched devices in the dropdown
+  matches.forEach(match => {
+    const li = document.createElement("li");
+    li.textContent = match.device;
+    li.classList.add("list-group-item", "list-group-item-action");
+    li.style.cursor = "pointer";
+
+    // Handle the click event to update fields and dynamically call updateEstimates()
+    li.onclick = () => {
+  document.getElementById("deviceName").value = match.device;
+  document.getElementById("devicePower").value = match.power_w;
+  document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
+  document.getElementById("usagePattern").value = match.pattern;
+  document.getElementById("deviceSearchInput").value = match.device;
+
+  // 👇 Trigger input events so listeners fire (optional, but helps maintain sync)
+  document.getElementById("devicePower").dispatchEvent(new Event("input"));
+  document.getElementById("deviceUsage").dispatchEvent(new Event("input"));
+
+  // 👇 OR just directly call updateEstimates (you already tried this too)
+  updateEstimates();
+
+  // 👇 Hide the dropdown
+  list.innerHTML = "";
+  list.style.display = "none";
+};
+
+
+
+    list.appendChild(li);
+  });
+});
+
+</script>
+<script type="module">
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  import { auth, db } from './firebase-config.js';
+  let costRate = 0.34;
+  let carbonRate = 0.233;
+  window.costRate = costRate;
+  window.carbonRate = carbonRate;
+  const powerInput = document.getElementById("devicePower");
+  const usageInput = document.getElementById("deviceUsage");
+  const costDisplay = document.getElementById("costEstimate");
+  const carbonDisplay = document.getElementById("carbonEstimate");
+  
+  
+  function updateEstimates() {
+  // Get the power rating and usage (in hours/day)
+  const power = parseFloat(document.getElementById("devicePower").value);
+  const usage = parseFloat(document.getElementById("deviceUsage").value);
+
+  // Validate if both power and usage are valid numbers
+  if (!isNaN(power) && !isNaN(usage)) {
+    // Convert minutes to hours if needed
+    const inMinutes = document.getElementById("toggleMinutes").checked;
+    const usageInHours = inMinutes ? usage / 60 : usage;
+
+    // Calculate kWh per month (usage in kilowatt-hours)
+    const kWhPerMonth = (power * usageInHours * 30) / 1000;
+
+    // Calculate the cost and CO2 output
+    const cost = kWhPerMonth * window.costRate;
+    const carbon = kWhPerMonth * window.carbonRate;
+
+    // Display the calculated values
+    document.getElementById("costEstimate").textContent = "£" + cost.toFixed(2);
+    document.getElementById("carbonEstimate").textContent = carbon.toFixed(2) + " kg/month";
+  } else {
+    // Reset the values if input is invalid
+    document.getElementById("costEstimate").textContent = "£0.00";
+    document.getElementById("carbonEstimate").textContent = "0.00 kg/month";
+  }
+}
 
   powerInput.addEventListener("input", updateEstimates);
   usageInput.addEventListener("input", updateEstimates);
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return window.location.href = "signup.html";
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      window.costRate = data.costPerKwh ?? 0.34;
+      window.carbonRate = data.carbonIntensity ?? 0.233;
+    }
+    updateEstimates();
+  });
 </script>
-
 <footer>2025 © Energy Dashboard Limited</footer>
 </body>
 </html>
