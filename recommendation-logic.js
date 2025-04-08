@@ -12,18 +12,36 @@ function formatMoney(amount) {
   return "£" + amount.toFixed(2);
 }
 
-function generateTip(device, usage, power, costPerKwh) {
-  const originalKWh = (power * usage * 30) / 1000;
-  const reducedUsage = usage - 1;
-  if (reducedUsage < 0.1) return null;
-  const reducedKWh = (power * reducedUsage * 30) / 1000;
-
-  const savedKWh = originalKWh - reducedKWh;
-  const savedCost = savedKWh * costPerKwh;
-  const savedCO2 = savedKWh * CO2_FACTOR;
-
-  return `📺 You’re using your <strong>${device}</strong> for <strong>${usage.toFixed(2)} hrs/day</strong>. Try reducing it by <strong>1 hour</strong> and save <strong>${formatMoney(savedCost)}</strong> and <strong>${savedCO2.toFixed(2)} kg CO₂/month</strong>. Your wallet and the planet will thank you! 🌍💸`;
-}
+function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent") {
+    const CO2_FACTOR = 0.233;
+  
+    const patternMultipliers = {
+      "Always On": 0.35,
+      "Standby": 0.15,
+      "Intermittent": 1.0,
+      "Occasional": 0.5,
+      "Seasonal": 0.25
+    };
+  
+    const multiplier = patternMultipliers[pattern] ?? 1.0;
+    const adjustedUsage = usage * multiplier;
+  
+    // If adjusted usage is already low, skip tip
+    if (adjustedUsage < 0.5) return null;
+  
+    const originalKWh = (power * adjustedUsage * 30) / 1000;
+    const reducedUsage = adjustedUsage - 1;
+    if (reducedUsage <= 0) return null;
+  
+    const reducedKWh = (power * reducedUsage * 30) / 1000;
+  
+    const savedKWh = originalKWh - reducedKWh;
+    const savedCost = savedKWh * costPerKwh;
+    const savedCO2 = savedKWh * CO2_FACTOR;
+  
+    return `📺 You’re using your <strong>${device}</strong> for <strong>${adjustedUsage.toFixed(2)} hrs/day</strong> (pattern: ${pattern}). Try reducing by <strong>1 hour</strong> to save <strong>${formatMoney(savedCost)}</strong> and <strong>${savedCO2.toFixed(2)} kg CO₂/month</strong>. 🌍💸`;
+  }
+  
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
@@ -35,13 +53,13 @@ onAuthStateChanged(auth, async (user) => {
   snapshot.forEach((doc) => {
     const d = doc.data();
     const tip = generateTip(
-      d.deviceName,
-      parseFloat(d.deviceUsage),
-      parseFloat(d.devicePower),
-      parseFloat(d.costPerKwh || DEFAULT_COST_PER_KWH)
-    );
-    if (tip) tips.push(`<li class="list-group-item">${tip}</li>`);
-  });
+        d.deviceName,
+        parseFloat(d.deviceUsage),
+        parseFloat(d.devicePower),
+        parseFloat(d.costPerKwh || DEFAULT_COST_PER_KWH),
+        d.usagePattern || "Intermittent"
+      );
+      
 
   tipsContainer.innerHTML = `
     <div class="card p-4">
