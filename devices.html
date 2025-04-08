@@ -192,18 +192,20 @@ toggle.addEventListener("change", () => {
 
 
   
-
- 
 function formatUsage(hours) {
   const totalMins = Math.round(hours * 60);
-  if (totalMins < 1) return "<1 min/day";
+  
+  if (totalMins < 60) {
+    return `${totalMins} min${totalMins !== 1 ? "s" : ""}/day`;
+  }
+
   const hrs = Math.floor(totalMins / 60);
   const mins = totalMins % 60;
 
-  if (hrs === 0) return `${mins} min${mins !== 1 ? "s" : ""}/day`;
   if (mins === 0) return `${hrs} hr${hrs !== 1 ? "s" : ""}/day`;
   return `${hrs} hr${hrs !== 1 ? "s" : ""} ${mins} min${mins !== 1 ? "s" : ""}/day`;
 }
+
 
 
   async function loadDevices() {
