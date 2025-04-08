@@ -1,8 +1,8 @@
 import { auth, db } from './firebase-config.js';
-import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { collection, getDocs, query, where, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
 
-const CO2_FACTOR = 0.233;
+const DEFAULT_CO2_FACTOR = 0.233;
 const DEFAULT_COST_PER_KWH = 0.34;
 const tipsContainer = document.getElementById("recommendationTips");
 
@@ -10,7 +10,7 @@ function formatMoney(amount) {
   return "£" + amount.toFixed(2);
 }
 
-function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent") {
+function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Intermittent") {
   const patternMultipliers = {
     "Always On": 0.35,
     "Standby": 0.15,
@@ -22,24 +22,28 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
   const multiplier = patternMultipliers[pattern] ?? 1.0;
   const adjustedUsage = usage * multiplier;
 
-  // Skip tips for always-on devices
+  // Skip Always On
   if (pattern === "Always On") {
     return `✅ <strong>${device}</strong> runs continuously as expected (Pattern: Always On). No changes recommended. ✅`;
   }
 
-  // Skip if usage is already low
+  // Praise efficient use
   if (adjustedUsage < 0.5) {
     return `✅ <strong>${device}</strong> is already efficient at <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
   }
 
-  // Use up to 25% of **real usage** or 2 hrs/day max
-  const maxReduction = Math.min(2, adjustedUsage, usage * 0.25);
+  // Calculate max realistic reduction (25% of original usage or 2 hours/day, whichever is less)
+  const maxReduction = Math.min(2, usage * 0.25, adjustedUsage);
   if (maxReduction < 0.25) return null;
 
-  // Use adjusted values for calculations (same as reports)
+  // Full monthly usage (in kWh)
+  const fullMonthlyKWh = (power * adjustedUsage * 30) / 1000;
+  const currentCost = fullMonthlyKWh * costPerKwh;
+
+  // Savings
   const savedKWh = (power * maxReduction * 30) / 1000;
-  const savedCost = savedKWh * costPerKwh;
-  const savedCO2 = savedKWh * CO2_FACTOR;
+  const savedCost = Math.min(savedKWh * costPerKwh, currentCost);
+  const savedCO2 = Math.min(savedKWh * co2Factor, fullMonthlyKWh * co2Factor);
 
   return `
     🔌 <strong>${device}</strong> is used <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}).<br>
@@ -54,6 +58,11 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
 
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  const userData = userDoc.exists() ? userDoc.data() : {};
+  const costPerKwh = parseFloat(userData.costPerKwh || DEFAULT_COST_PER_KWH);
+  const co2Factor = parseFloat(userData.carbonIntensity || DEFAULT_CO2_FACTOR);
+
   const q = query(collection(db, "devices"), where("uid", "==", user.uid));
   const snapshot = await getDocs(q);
 
@@ -64,7 +73,8 @@ onAuthStateChanged(auth, async (user) => {
       d.deviceName,
       parseFloat(d.deviceUsage),
       parseFloat(d.devicePower),
-      parseFloat(d.costPerKwh || DEFAULT_COST_PER_KWH),
+      costPerKwh,
+      co2Factor,
       d.usagePattern || "Intermittent"
     );
     if (tip) tips.push(`<li class="list-group-item">${tip}</li>`);
