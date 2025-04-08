@@ -321,19 +321,21 @@ const payload = {
 
     // Handle the click event to update fields and dynamically call updateEstimates()
     li.onclick = () => {
-      document.getElementById("deviceName").value = match.device;
-      document.getElementById("devicePower").value = match.power_w;
-      document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
-      document.getElementById("usagePattern").value = match.pattern;
-      document.getElementById("deviceSearchInput").value = match.device;
-      
-      // Hide the list after selection
-      list.innerHTML = "";
-      list.style.display = "none";
+  // Update the form fields with selected device data
+  document.getElementById("deviceName").value = match.device;
+  document.getElementById("devicePower").value = match.power_w;
+  document.getElementById("deviceUsage").value = match.usage_hrs_per_day;
+  document.getElementById("usagePattern").value = match.pattern;
+  document.getElementById("deviceSearchInput").value = match.device;
 
-      // Call the function to dynamically update estimates
-      updateEstimates();  // <-- Make sure this is called here!
-    };
+  // Hide the autocomplete list and reset its content
+  list.innerHTML = "";
+  list.style.display = "none";
+
+  // Trigger the dynamic update of estimates after the selection
+  updateEstimates();
+};
+
 
     list.appendChild(li);
   });
@@ -352,26 +354,36 @@ const payload = {
   const usageInput = document.getElementById("deviceUsage");
   const costDisplay = document.getElementById("costEstimate");
   const carbonDisplay = document.getElementById("carbonEstimate");
+  
+  
   function updateEstimates() {
-    const power = parseFloat(powerInput.value);
+  // Get the power rating and usage (in hours/day)
+  const power = parseFloat(document.getElementById("devicePower").value);
+  const usage = parseFloat(document.getElementById("deviceUsage").value);
 
+  // Validate if both power and usage are valid numbers
+  if (!isNaN(power) && !isNaN(usage)) {
+    // Convert minutes to hours if needed
+    const inMinutes = document.getElementById("toggleMinutes").checked;
+    const usageInHours = inMinutes ? usage / 60 : usage;
 
-    const rawUsage = parseFloat(usageInput.value);
-const inMinutes = document.getElementById("toggleMinutes")?.checked;
-const usage = inMinutes ? rawUsage / 60 : rawUsage;
+    // Calculate kWh per month (usage in kilowatt-hours)
+    const kWhPerMonth = (power * usageInHours * 30) / 1000;
 
-if (!isNaN(power) && !isNaN(usage)) {
-  const kWhPerMonth = (power * usage * 30) / 1000;
+    // Calculate the cost and CO2 output
+    const cost = kWhPerMonth * window.costRate;
+    const carbon = kWhPerMonth * window.carbonRate;
 
-      const cost = kWhPerMonth * window.costRate;
-      const carbon = kWhPerMonth * window.carbonRate;
-      costDisplay.textContent = "£" + cost.toFixed(2);
-      carbonDisplay.textContent = carbon.toFixed(2);
-    } else {
-      costDisplay.textContent = "£0.00";
-      carbonDisplay.textContent = "0.00";
-    }
+    // Display the calculated values
+    document.getElementById("costEstimate").textContent = "£" + cost.toFixed(2);
+    document.getElementById("carbonEstimate").textContent = carbon.toFixed(2) + " kg/month";
+  } else {
+    // Reset the values if input is invalid
+    document.getElementById("costEstimate").textContent = "£0.00";
+    document.getElementById("carbonEstimate").textContent = "0.00 kg/month";
   }
+}
+
   powerInput.addEventListener("input", updateEstimates);
   usageInput.addEventListener("input", updateEstimates);
   onAuthStateChanged(auth, async (user) => {
