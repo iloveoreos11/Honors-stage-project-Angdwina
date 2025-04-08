@@ -199,6 +199,15 @@ toggle.addEventListener("change", () => {
     currentUser = user;
     loadDevices();
   });
+  function formatUsage(hours) {
+  const totalMins = hours * 60;
+  if (totalMins < 1) return "<1 min/day";
+  if (totalMins < 60) return `${Math.round(totalMins)} mins/day`;
+  const hrs = Math.floor(totalMins / 60);
+  const mins = Math.round(totalMins % 60);
+  if (mins === 0) return `${hrs} hr${hrs > 1 ? "s" : ""}/day`;
+  return `${hrs} hr${hrs > 1 ? "s" : ""} ${mins} min${mins > 1 ? "s" : ""}/day`;
+}
 
   async function loadDevices() {
   container.innerHTML = "";
@@ -212,7 +221,9 @@ toggle.addEventListener("change", () => {
     div.innerHTML = `
       <div>
         <strong>${device.deviceName}</strong><br>
-        ${device.devicePower} W - ${device.deviceUsage} hrs/day
+
+        ${device.devicePower} W - ${formatUsage(device.deviceUsage)} per day
+
       </div>
       <div style="display: flex; gap: 10px;">
         <button class="btn btn-sm btn-outline-primary me-2 edit-btn" data-id="${docSnap.id}">Edit</button>
