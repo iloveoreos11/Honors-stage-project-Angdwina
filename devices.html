@@ -195,7 +195,7 @@ toggle.addEventListener("change", () => {
 function formatUsage(hours) {
   const toggle = document.getElementById("toggleMinutes");
   const isMinutes = toggle && toggle.checked;
-  
+
   if (isMinutes) {
     const totalMins = Math.round(hours * 60);
     return `${totalMins} min${totalMins !== 1 ? "s" : ""}/day`;
@@ -203,6 +203,7 @@ function formatUsage(hours) {
 
   return `${hours.toFixed(2)} hr${hours !== 1 ? "s" : ""}/day`;
 }
+
 
 
 
