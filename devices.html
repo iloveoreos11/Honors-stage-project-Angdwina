@@ -384,12 +384,13 @@ const payload = {
 
   // Define multipliers based on usage pattern
   const patternMultipliers = {
-    "Always On": 1,
-    "Standby": 0.7,
-    "Intermittent": 0.5,
-    "Occasional": 0.25,
-    "Seasonal": 0.5
-  };
+  "Always On": 0.35,     // Simulates fridge cycling
+  "Standby": 0.15,       // Low usage (between 0.1 and 0.2)
+  "Intermittent": 1.0,   // Use actual input
+  "Occasional": 0.5,     // Halve the time
+  "Seasonal": 1.0        // We'll handle yearly adjustment separately if needed
+};
+
 
   const multiplier = patternMultipliers[pattern] ?? 1;
 
