@@ -178,7 +178,7 @@ const patternMultipliers = {
   "Standby": 0.15,
   "Intermittent": 1.0,
   "Occasional": 0.5,
-  "Seasonal": 1.0
+  "Seasonal": 0.25
 };
 
 const adjustedUsage = usage * (patternMultipliers[pattern] ?? 1.0);
