@@ -4,7 +4,6 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/fi
 
 const CO2_FACTOR = 0.233;
 const DEFAULT_COST_PER_KWH = 0.34;
-
 const tipsContainer = document.getElementById("recommendationTips");
 
 function formatMoney(amount) {
@@ -31,8 +30,8 @@ function generateTip(device, usage, power, costPerKwh, pattern = "Intermittent")
     return `✅ <strong>${device}</strong> is already efficient at <strong>${usage.toFixed(2)} hrs/day</strong> (Pattern: ${pattern}). Great job! 🎉`;
   }
 
-  // Only reduce by up to 25% of original usage or adjustedUsage (whichever is smaller)
-  const maxReduction = Math.min(2, adjustedUsage, usage * 0.25);
+  // Only reduce up to 25% of original usage or 2 hrs/day max
+  const maxReduction = Math.min(2, usage * 0.25, adjustedUsage);
   if (maxReduction < 0.25) return null;
 
   const savedKWh = (power * maxReduction * 30) / 1000;
