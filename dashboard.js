@@ -5,8 +5,7 @@ import {
   where,
   getDocs,
   doc,
-  getDoc,
-  limit
+  getDoc
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import {
   onAuthStateChanged,
@@ -70,7 +69,8 @@ async function loadDashboardData() {
       usage: usageHours,
       cost: cost,
       co2: co2,
-      kwh: kWh
+      kwh: kWh,
+      pattern: d.usagePattern
     });
   });
 
@@ -83,7 +83,7 @@ async function loadDashboardData() {
   totalCarbonEl.innerHTML = `🌍 <strong>Estimated CO₂ Emissions:</strong><br>${totalCO2.toFixed(2)} kg`;
 
   showTopDevices(devices);
-  showSmartTip();
+  showSmartTip(devices);
 }
 
 function showTopDevices(devices) {
@@ -102,21 +102,66 @@ function showTopDevices(devices) {
   }
 }
 
-async function showSmartTip() {
-  try {
-    const tipQuery = query(collection(db, "recommendations"), where("uid", "==", currentUser.uid), limit(1));
-    const snapshot = await getDocs(tipQuery);
-
-    if (!snapshot.empty) {
-      const rec = snapshot.docs[0].data();
-      smartTipEl.textContent = `💡 ${rec.message}`;
-    } else {
-      smartTipEl.textContent = "💡 You're doing great! Keep monitoring your energy use.";
-    }
-  } catch (err) {
-    smartTipEl.textContent = "💡 Tip unavailable. Please check back later.";
-    console.error("Error loading smart tip:", err);
+function showSmartTip(devices) {
+  if (!devices.length) {
+    smartTipEl.textContent = "💡 No devices added yet. Add a few to receive smart tips!";
+    return;
   }
+
+  const tips = [];
+
+  devices.forEach((d) => {
+    const tip = generateTip(
+      d.name,
+      d.usage,
+      d.cost / (costPerKwh * 30) * 1000 / d.usage || 0, // reverse calculate power from cost estimate
+      costPerKwh,
+      carbonIntensity,
+      d.pattern || "Intermittent"
+    );
+    if (tip) tips.push(tip);
+  });
+
+  smartTipEl.innerHTML = tips.length > 0
+    ? `💡 ${tips[0]}`
+    : "💡 You're already using your devices efficiently! Great job 🌿";
+}
+
+function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Intermittent") {
+  const patternMultipliers = {
+    "Always On": 0.35,
+    "Standby": 0.15,
+    "Intermittent": 1.0,
+    "Occasional": 0.5,
+    "Seasonal": 0.25
+  };
+
+  const multiplier = patternMultipliers[pattern] ?? 1.0;
+  const adjustedUsage = usage * multiplier;
+
+  if (pattern === "Always On") {
+    return `<strong>${device}</strong> runs continuously (Pattern: Always On). No changes recommended.`;
+  }
+
+  if (adjustedUsage < 0.5) {
+    const usageDisplay = usage < 1 ? `${Math.round(usage * 60)} minute${Math.round(usage * 60) !== 1 ? "s" : ""}/day` : `${usage.toFixed(2)} hrs/day`;
+    return `<strong>${device}</strong> is already efficient at ${usageDisplay} (Pattern: ${pattern}). Great job! 🎉`;
+  }
+
+  const maxReduction = Math.min(2, adjustedUsage * 0.25);
+  if (maxReduction < 0.25) return null;
+
+  const fullKWh = (power * usage * 30) / 1000;
+  const fullCost = fullKWh * costPerKwh;
+  const fullCO2 = fullKWh * co2Factor;
+
+  const realisticRatio = maxReduction / usage;
+  const savedCost = fullCost * realisticRatio;
+  const savedCO2 = fullCO2 * realisticRatio;
+
+  const minutes = Math.round(maxReduction * 60);
+
+  return `<strong>${device}</strong> is used ${usage.toFixed(2)} hrs/day (Pattern: ${pattern}).<br>By reducing usage by ${minutes} min/day, you could save <strong>£${savedCost.toFixed(2)}</strong> and cut <strong>${savedCO2.toFixed(2)} kg CO₂</strong> monthly.`;
 }
 
 const signOutBtn = document.getElementById("signOutBtn");
