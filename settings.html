@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script type="module" src="firebase-config.js"></script>
-  <meta charset="UTF-8" />
+  <script src="firebase-config.js" type="module"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="auth.js"></script>
+
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -45,109 +50,116 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">⚙️ Settings</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav gap-3">
-        <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="devices.html">Devices</a></li>
-        <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
-        <li class="nav-item"><a class="nav-link" href="recommendations.html">Recommendations</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-            <i class="fas fa-user-circle"></i> Account
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
-            <li><a class="dropdown-item" href="#">🔓 Sign Out</a></li>
-          </ul>
-        </li>
-      </ul>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">⚡ Energy Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="card p-4">
+      <h2 class="text-center mb-4">⚙️ Settings</h2>
+      <form>
+        <div class="mb-3">
+          <label for="cost" class="form-label">Cost per kWh (£)</label>
+          <input type="number" class="form-control" id="cost" placeholder="Enter cost">
+        </div>
+        <div class="mb-3">
+          <label for="co2" class="form-label">CO₂ Intensity (kg per kWh)</label>
+          <input type="number" class="form-control" id="co2" placeholder="Enter CO₂ intensity">
+        </div>
+        <button type="button" class="btn btn-primary" onclick="saveSettings()">Save</button>
+      </form>
+
+      <div class="text-center mt-4">
+        <button class="btn btn-warning mt-2" onclick="resetData()">Reset My Data</button><br>
+        <button class="btn btn-secondary mt-2" onclick="sendResetEmail()">Send Password Reset Email</button><br>
+        <button class="btn btn-danger mt-2" onclick="deleteAccount()">Delete My Account</button>
+      </div>
     </div>
   </div>
-</nav>
 
-<div class="container py-5">
-  <div class="card p-4 mx-auto" style="max-width: 500px;">
-    <h3 class="text-center mb-4">⚙️ Settings</h3>
-    <form id="settingsForm">
-      <div class="mb-3">
-        <label for="costPerKwh" class="form-label">Cost per kWh (£)</label>
-        <input type="number" id="costPerKwh" step="0.01" min="0" class="form-control" placeholder="e.g. 0.34" required />
-      </div>
-      <div class="mb-3">
-        <label for="carbonIntensity" class="form-label">CO₂ Intensity (kg per kWh)</label>
-        <input type="number" id="carbonIntensity" step="0.001" min="0" class="form-control" placeholder="e.g. 0.233" required />
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Save Settings</button>
-      <p id="statusMsg" class="text-center mt-3"></p>
-    </form>
+  <footer>2025 © Energy Dashboard Limited</footer>
 
-    <button class="btn btn-warning w-100 mt-4">♻️ Reset Data</button>
-    <button class="btn btn-secondary w-100 mt-2">🔑 Forgot Password?</button>
-    <button class="btn btn-danger w-100 mt-2" onclick="confirmDelete()">🚫 Delete Account</button>
-  </div>
-</div>
-
-<footer>
-  2025 © Energy Dashboard Limited
-</footer>
-
-<script>
-function confirmDelete() {
-  if(confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-    alert('Your account has been deleted (mock action).');
-  }
-}
-</script>
-
-<script type="module">
-  import { auth, db } from './firebase-config.js';
-  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-  import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
-
-  const costInput = document.getElementById("costPerKwh");
-  const carbonInput = document.getElementById("carbonIntensity");
-  const statusMsg = document.getElementById("statusMsg");
-  let currentUser;
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return window.location.href = "signup.html";
-    currentUser = user;
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      costInput.value = data.costPerKwh ?? "";
-      carbonInput.value = data.carbonIntensity ?? "";
+  <script>
+    function saveSettings() {
+      const cost = parseFloat(document.getElementById("cost").value);
+      const co2 = parseFloat(document.getElementById("co2").value);
+      const user = firebase.auth().currentUser;
+      if (user) {
+        firebase.firestore().collection("users").doc(user.uid).set({
+          costPerKwh: cost,
+          carbonIntensity: co2
+        }, { merge: true }).then(() => {
+          alert("Settings saved!");
+        });
+      }
     }
-  });
 
-  document.getElementById("settingsForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentUser) return;
-    const newCost = parseFloat(costInput.value);
-    const newCarbon = parseFloat(carbonInput.value);
+    function resetData() {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("You must be signed in.");
 
-    try {
-      await setDoc(doc(db, "users", currentUser.uid), {
-        costPerKwh: newCost,
-        carbonIntensity: newCarbon
-      }, { merge: true });
-      statusMsg.textContent = "✅ Settings saved successfully!";
-      statusMsg.className = "text-success mt-3";
-    } catch (err) {
-      statusMsg.textContent = "❌ Error saving settings.";
-      statusMsg.className = "text-danger mt-3";
+      const db = firebase.firestore();
+      const userRef = db.collection("users").doc(user.uid);
+
+      db.collection("users").doc(user.uid).collection("devices").get().then(snapshot => {
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        return batch.commit();
+      }).then(() => {
+        return userRef.set({
+          costPerKwh: null,
+          carbonIntensity: null
+        }, { merge: true });
+      }).then(() => {
+        alert("All your data has been reset.");
+      }).catch(error => {
+        console.error("Error resetting data:", error);
+        alert("Something went wrong.");
+      });
     }
-  });
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    function sendResetEmail() {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("You must be signed in.");
+      const email = user.email;
 
+      firebase.auth().sendPasswordResetEmail(email).then(() => {
+        alert(`Password reset email sent to ${email}`);
+      }).catch(error => {
+        console.error("Error sending reset email:", error);
+        alert("Could not send email.");
+      });
+    }
+
+    function deleteAccount() {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("You must be signed in.");
+
+      if (!confirm("Are you sure you want to delete your account? This action is permanent.")) return;
+
+      const db = firebase.firestore();
+      const userRef = db.collection("users").doc(user.uid);
+
+      db.collection("users").doc(user.uid).collection("devices").get().then(snapshot => {
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        return batch.commit();
+      }).then(() => userRef.delete())
+        .then(() => user.delete())
+        .then(() => {
+          alert("Your account has been deleted.");
+          window.location.href = "signup.html";
+        }).catch(error => {
+          console.error("Error deleting account:", error);
+          if (error.code === 'auth/requires-recent-login') {
+            alert("Please log in again and try deleting your account.");
+          } else {
+            alert("Something went wrong.");
+          }
+        });
+    }
+  </script>
 </body>
 </html>
