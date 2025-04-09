@@ -56,7 +56,8 @@ window.addEventListener("DOMContentLoaded", () => {
         <div>
           <strong>${d.deviceName}</strong><br>
           <span class='badge bg-light text-dark'>${getEmoji(d.usagePattern)} ${d.usagePattern}</span><br>
-          <small>${d.devicePower}W • ${d.deviceUsage} hrs/day</small>
+         <small>${d.devicePower}W • ${formatUsage(d.deviceUsage)}</small>
+
         </div>
         <div style="display: flex; gap: 10px;">
           <button class="btn btn-outline-primary btn-sm edit-btn" data-id="${d.id}">Edit</button>
