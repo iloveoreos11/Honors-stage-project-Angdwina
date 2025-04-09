@@ -84,7 +84,7 @@
   </nav>
 
   <div class="container py-5">
-    <h4 class="fw-bold mb-1">👋 Welcome back, Angdwina</h4>
+    <h4 class="fw-bold mb-1">👋 Welcome back</h4>
     <p class="text-muted mb-4">Here’s your estimated monthly energy summary based on device usage.</p>
 
     <!-- Summary Cards -->
@@ -93,6 +93,23 @@
       <div class="col-md-4"><div class="card" id="totalCost">Loading...</div></div>
       <div class="col-md-4"><div class="card" id="totalCarbon">Loading...</div></div>
     </div>
+    <!-- Cost & CO₂ Information Section -->
+<div class="row text-center">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3">Current Cost per kWh</h5>
+      <p id="costPerKwhDisplay">Loading...</p>
+      <a href="settings.html" class="btn btn-link">Change</a>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3">Current CO₂ Intensity</h5>
+      <p id="carbonIntensityDisplay">Loading...</p>
+      <a href="settings.html" class="btn btn-link">Change</a>
+    </div>
+  </div>
+</div>
 
     <!-- Top Energy Consumers -->
     <div class="card p-4 mb-4">
