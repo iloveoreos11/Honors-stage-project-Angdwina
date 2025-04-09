@@ -152,29 +152,34 @@
 
   // 🧼 Reset Data
   window.resetData = async function () {
-    if (!currentUser) return alert("You're not signed in.");
-    const confirmReset = confirm("This will delete all your devices and reset your settings. Continue?");
-    if (!confirmReset) return;
+  if (!currentUser) return alert("You're not signed in.");
+  const confirmReset = confirm("This will delete all your devices and reset your settings. Continue?");
+  if (!confirmReset) return;
 
-    try {
-      const deviceSnapshot = await getDocs(collection(db, "users", currentUser.uid, "devices"));
-      for (const docSnap of deviceSnapshot.docs) {
+  try {
+    // ✅ Delete all top-level devices with current user's UID
+    const deviceSnapshot = await getDocs(collection(db, "devices"));
+    for (const docSnap of deviceSnapshot.docs) {
+      const data = docSnap.data();
+      if (data.uid === currentUser.uid) {
         await deleteDoc(docSnap.ref);
       }
-
-      await setDoc(doc(db, "users", currentUser.uid), {
-        costPerKwh: null,
-        carbonIntensity: null
-      }, { merge: true });
-
-      alert("✅ Your data has been reset.");
-      document.getElementById("costPerKwh").value = "";
-      document.getElementById("carbonIntensity").value = "";
-    } catch (err) {
-      console.error("Reset error:", err);
-      alert("❌ Error resetting your data.");
     }
-  };
+
+    // ✅ Reset cost/CO2 in user's profile
+    await setDoc(doc(db, "users", currentUser.uid), {
+      costPerKwh: null,
+      carbonIntensity: null
+    }, { merge: true });
+
+    alert("✅ Your data has been reset.");
+    document.getElementById("costPerKwh").value = "";
+    document.getElementById("carbonIntensity").value = "";
+  } catch (err) {
+    console.error("🔥 Reset error:", err.message, err);
+    alert("❌ Error: " + err.message);
+  }
+};
 
   // 🔐 Forgot Password
   window.sendResetEmail = async function () {
