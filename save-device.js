@@ -105,45 +105,48 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  form?.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
   
-    const deviceName = document.getElementById("deviceName").value;
-    const devicePower = parseFloat(document.getElementById("devicePower").value);
-    const deviceUsage = parseFloat(document.getElementById("deviceUsage").value);
-    const usagePattern = document.getElementById("usagePattern").value;
-    const editingId = document.getElementById("editingDeviceId").value;
+    const editingDeviceId = document.getElementById("editingDeviceId").value;
+    const isEditing = Boolean(editingDeviceId);
   
-    const user = auth.currentUser;
-    if (!user) return;
+    let usage = parseFloat(document.getElementById("deviceUsage").value);
+    const inMinutes = document.getElementById("toggleMinutes").checked;
+    if (inMinutes) usage = usage / 60; // ✅ Convert only once here
   
-    if (editingId) {
-      const ref = doc(db, "devices", editingId);
-      await updateDoc(ref, {
-        uid: user.uid,
-        deviceName,
-        devicePower,
-        deviceUsage,
-        usagePattern,
-      });
-    } else {
-      await addDoc(collection(db, "devices"), {
-        uid: user.uid,
-        deviceName,
-        devicePower,
-        deviceUsage,
-        usagePattern
-      });
+    const payload = {
+      uid: currentUser.uid,
+      deviceName: document.getElementById("deviceName").value,
+      devicePower: parseFloat(document.getElementById("devicePower").value),
+      deviceUsage: usage,
+      usagePattern: document.getElementById("usagePattern").value,
+      costPerKwh: parseFloat(window.costRate),
+      carbonIntensity: parseFloat(window.carbonRate),
+    };
+  
+    if (!payload.deviceName || isNaN(payload.devicePower) || isNaN(payload.deviceUsage)) {
+      alert("Please fill out all fields correctly.");
+      return;
     }
-
-    // ⏳ Small delay so Firestore can trigger UI refresh cleanly
-    setTimeout(() => {
-      form.reset();
-      document.getElementById("editingDeviceId").value = "";
-      document.getElementById("formHeader").textContent = "➕ Add a New Device";
-      document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
-    }, 150);
+  
+    if (isEditing) {
+      const ref = doc(db, "devices", editingDeviceId);
+      await updateDoc(ref, payload);
+    } else {
+      const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+      await addDoc(collection(db, "devices"), payload);
+    }
+  
+    form.reset();
+    document.getElementById("editingDeviceId").value = "";
+    document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
+    document.getElementById("formHeader").textContent = "➕ Add a New Device";
+    document.getElementById("deviceSearchInput").value = "";
+    updateEstimates();
+    loadDevices();
   });
+  
 });
 
 function getEmoji(pattern) {
