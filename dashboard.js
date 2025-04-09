@@ -128,41 +128,42 @@ function showSmartTip(devices) {
 }
 
 function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Intermittent") {
-  const patternMultipliers = {
-    "Always On": 0.35,
-    "Standby": 0.15,
-    "Intermittent": 1.0,
-    "Occasional": 0.5,
-    "Seasonal": 0.25
-  };
-
-  const adjustedUsage = usageHours * (patternMultipliers[d.usagePattern] ?? 1.0);
-  const kWh = (powerWatts * adjustedUsage * 30) / 1000;
+    const patternMultipliers = {
+      "Always On": 0.35,
+      "Standby": 0.15,
+      "Intermittent": 1.0,
+      "Occasional": 0.5,
+      "Seasonal": 0.25
+    };
   
-  if (pattern === "Always On") {
-    return `<strong>${device}</strong> runs continuously (Pattern: Always On). No changes recommended.`;
+    const adjustedUsage = usage * (patternMultipliers[pattern] ?? 1.0);
+  
+    if (pattern === "Always On") {
+      return `<strong>${device}</strong> runs continuously (Pattern: Always On). No changes recommended.`;
+    }
+  
+    if (adjustedUsage < 0.5) {
+      const usageDisplay = usage < 1
+        ? `${Math.round(usage * 60)} minute${Math.round(usage * 60) !== 1 ? "s" : ""}/day`
+        : `${usage.toFixed(2)} hrs/day`;
+      return `<strong>${device}</strong> is already efficient at ${usageDisplay} (Pattern: ${pattern}). Great job! 🎉`;
+    }
+  
+    const maxReduction = Math.min(2, adjustedUsage * 0.25);
+    if (maxReduction < 0.25) return null;
+  
+    const fullKWh = (power * usage * 30) / 1000;
+    const fullCost = fullKWh * costPerKwh;
+    const fullCO2 = fullKWh * co2Factor;
+  
+    const realisticRatio = maxReduction / usage;
+    const savedCost = fullCost * realisticRatio;
+    const savedCO2 = fullCO2 * realisticRatio;
+    const minutes = Math.round(maxReduction * 60);
+  
+    return `<strong>${device}</strong> is used ${usage.toFixed(2)} hrs/day (Pattern: ${pattern}).<br>By reducing usage by ${minutes} min/day, you could save <strong>£${savedCost.toFixed(2)}</strong> and cut <strong>${savedCO2.toFixed(2)} kg CO₂</strong> monthly.`;
   }
-
-  if (adjustedUsage < 0.5) {
-    const usageDisplay = usage < 1 ? `${Math.round(usage * 60)} minute${Math.round(usage * 60) !== 1 ? "s" : ""}/day` : `${usage.toFixed(2)} hrs/day`;
-    return `<strong>${device}</strong> is already efficient at ${usageDisplay} (Pattern: ${pattern}). Great job! 🎉`;
-  }
-
-  const maxReduction = Math.min(2, adjustedUsage * 0.25);
-  if (maxReduction < 0.25) return null;
-
-  const fullKWh = (power * usage * 30) / 1000;
-  const fullCost = fullKWh * costPerKwh;
-  const fullCO2 = fullKWh * co2Factor;
-
-  const realisticRatio = maxReduction / usage;
-  const savedCost = fullCost * realisticRatio;
-  const savedCO2 = fullCO2 * realisticRatio;
-
-  const minutes = Math.round(maxReduction * 60);
-
-  return `<strong>${device}</strong> is used ${usage.toFixed(2)} hrs/day (Pattern: ${pattern}).<br>By reducing usage by ${minutes} min/day, you could save <strong>£${savedCost.toFixed(2)}</strong> and cut <strong>${savedCO2.toFixed(2)} kg CO₂</strong> monthly.`;
-}
+  
 
 const signOutBtn = document.getElementById("signOutBtn");
 if (signOutBtn) {
