@@ -57,9 +57,9 @@ async function loadDashboardData() {
   
     snapshot.forEach(docSnap => {
       const d = docSnap.data();
+      const usageHours = parseFloat(d.deviceUsage) || 0;  // Default to 0 if invalid
+      const powerWatts = parseFloat(d.devicePower) || 0; // Default to 0 if invalid
       const multiplier = patternMultipliers[d.usagePattern] ?? 1;
-      const usageHours = parseFloat(d.deviceUsage) || 0;
-      const powerWatts = parseFloat(d.devicePower) || 0;
   
       const kWh = (powerWatts * usageHours * 30 * multiplier) / 1000;
       const cost = kWh * costPerKwh;
@@ -75,6 +75,14 @@ async function loadDashboardData() {
       });
     });
   
+    // Check if devices are populated
+    if (devices.length === 0) {
+      totalEnergyEl.innerHTML = "No devices added yet.";
+      totalCostEl.innerHTML = "No devices added yet.";
+      totalCarbonEl.innerHTML = "No devices added yet.";
+      return;
+    }
+  
     const totalKwh = devices.reduce((sum, d) => sum + d.kwh, 0);
     const totalCost = devices.reduce((sum, d) => sum + d.cost, 0);
     const totalCO2 = devices.reduce((sum, d) => sum + d.co2, 0);
@@ -89,8 +97,8 @@ async function loadDashboardData() {
   
     showTopDevices(devices);
     showSmartTip(devices);
-  }
-  
+}
+
 
 
 function showTopDevices(devices) {
