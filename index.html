@@ -2,296 +2,82 @@
 <html lang="en">
 <head>
   <script type="module" src="firebase-config.js"></script>
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Energy Usage Dashboard</title>
+  <title>Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module" src="auth.js"></script>
-  <script type="module" src="firebase-config.js"></script>
-
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
+      background: linear-gradient(to right, #f8f9fa, #e0eafc);
       color: #333;
-      margin: 0;
-      padding: 0;
-      font-size: 1.05rem;
-    }
-    .navbar {
-      background-color: #2c3e50;
-    }
-    .navbar-brand {
-      color: white !important;
-      font-size: 1.5rem;
-    }
-    .nav-link {
-      color: white !important;
-      font-size: 1rem;
-    }
-    .nav-link:hover {
-      color: #1abc9c !important;
     }
     .card {
-      border: none;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-      transition: 0.3s ease;
+      background: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .summary .card {
+      text-align: center;
       padding: 1.5rem;
-    }
-    .card:hover {
-      transform: scale(1.01);
-    }
-    .dashboard-title {
+      font-size: 1.2rem;
       font-weight: 600;
-      margin-bottom: 2rem;
-      font-size: 1.8rem;
-    }
-    .card h6 {
-      font-size: 1.1rem;
-    }
-    .animated-number {
-      font-size: 1.4rem;
-      font-weight: 600;
-    }
-    .toggle-buttons button {
-      width: 100%;
-      margin-bottom: 0.5rem;
-      background-color: #2c3e50;
-      border: none;
-      color: white;
-      font-weight: 600;
-      padding: 12px 18px;
-      font-size: 1rem;
-      border-radius: 5px;
-      transition: 0.3s ease;
-    }
-    .toggle-buttons button:hover {
-      background-color: #1abc9c;
-      color: white;
-      transform: scale(1.05);
-    }
-    .toggle-buttons button.active {
-      background-color: #1abc9c;
-      color: white;
-    }
-    .navbar-toggler-icon {
-      background-color: white;
-      width: 30px;
-      height: 3px;
-      border-radius: 2px;
-      position: relative;
-      transition: 0.3s ease;
-    }
-    .navbar-toggler-icon::before,
-    .navbar-toggler-icon::after {
-      content: '';
-      display: block;
-      position: absolute;
-      width: 30px;
-      height: 3px;
-      background-color: white;
-      border-radius: 2px;
-      transition: 0.3s ease;
-    }
-    .navbar-toggler-icon::before { top: -8px; }
-    .navbar-toggler-icon::after { top: 8px; }
-    @media (min-width: 576px) {
-      .toggle-buttons { display: flex; gap: 1rem; }
-      .toggle-buttons button { width: auto; margin-bottom: 0; }
     }
     footer {
       background-color: #2c3e50;
       color: white;
       text-align: center;
       padding: 1rem;
-      margin-top: 3rem;
       font-size: 1rem;
+      margin-top: 2rem;
     }
-    #usageChart { height: 300px !important; }
+    .nav-link, .navbar-brand { color: white !important; }
+    .nav-link:hover { color: #1abc9c !important; }
+    ul#topDevicesList li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #ddd;
+    }
   </style>
 </head>
 <body>
-
-<nav class="navbar navbar-expand-lg">
-  <div class="container-fluid">
+  <!-- 🔹 Navbar -->
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark px-4">
     <a class="navbar-brand" href="#">⚡ Energy Dashboard</a>
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav gap-3">
-        <li class="nav-item"><a class="nav-link" href="devices.html">Devices</a></li>
-        <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
-        <li class="nav-item"><a class="nav-link" href="recommendations.html">Recommendations</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-            <i class="fas fa-user-circle"></i> Account
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
-            <li><a class="dropdown-item" href="#" id="signOutBtn">🔓 Sign Out</a></li>
-          </ul>
-        </li>
+    <div class="ms-auto">
+      <a class="btn btn-outline-light me-2" href="devices.html">Devices</a>
+      <a class="btn btn-outline-light me-2" href="reports.html">Reports</a>
+      <a class="btn btn-outline-light me-2" href="recommendations.html">Tips</a>
+      <button id="signOutBtn" class="btn btn-danger">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <!-- 🔹 Summary Cards -->
+    <div class="row summary text-center mb-4">
+      <div class="col-md-4"><div class="card" id="totalEnergy">🌡️ Energy: -- kWh</div></div>
+      <div class="col-md-4"><div class="card" id="totalCost">💸 Cost: £--</div></div>
+      <div class="col-md-4"><div class="card" id="totalCarbon">🌍 CO₂: -- kg</div></div>
+    </div>
+
+    <!-- 🔹 Top Devices -->
+    <div class="card p-4 mb-4">
+      <h5 class="fw-bold">Top Energy Consumers</h5>
+      <ul class="list-unstyled mt-3" id="topDevicesList">
+        <li>Loading...</li>
       </ul>
     </div>
-  </div>
-</nav>
 
-<div class="container my-5">
-  <h2 class="dashboard-title text-center text-md-start" id="userGreeting">Hey! 🌞 Here's your energy update</h2>
-
-  <div class="row g-3">
-    <div class="col-6 col-md-3">
-      <div class="card text-center">
-        <h6>Total Usage</h6>
-        <p class="animated-number">318 <span class="text-muted small">kWh</span></p>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card text-center">
-        <h6>💸 Monthly Cost</h6>
-        <p class="animated-number">42 <span class="text-muted small">£</span></p>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card text-center">
-        <h6>🌍 CO₂</h6>
-        <p class="animated-number">29 <span class="text-muted small">kg</span></p>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card text-center">
-        <h6>Top Device</h6>
-        <p class="text-muted">Heater</p>
-      </div>
+    <!-- 🔹 Smart Tip -->
+    <div class="card p-4">
+      <h5 class="fw-bold">Smart Tip</h5>
+      <p id="smartTip">Loading...</p>
+      <a href="recommendations.html">See all tips →</a>
     </div>
   </div>
 
-  <div class="toggle-buttons d-flex justify-content-center flex-wrap gap-2 mt-4">
-    <button class="btn btn-outline-dark btn-sm">Weekly</button>
-    <button class="btn btn-outline-dark btn-sm">Monthly</button>
-    <button class="btn btn-outline-dark btn-sm">Yearly</button>
-  </div>
+  <footer>2025 © Energy Dashboard Limited</footer>
 
-  <div class="row g-4 mt-3">
-    <div class="col-12 col-md-8">
-      <div class="card">
-        <h6 class="mb-3">📊 Energy Usage This Week</h6>
-        <canvas id="usageChart"></canvas>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="card mb-3">
-        <h6>💬 Notifications</h6>
-        <ul class="text-muted small mb-0">
-          <li>🌟 12% less energy this week!</li>
-          <li>💡 Turn off devices when idle.</li>
-          <li>⚠️ High usage: Heater (42%)</li>
-        </ul>
-      </div>
-      <div class="card mb-3">
-        <h6>🧠 Energy Fact</h6>
-        <p class="text-muted small">Turning off lights when leaving a room can save up to 15% annually!</p>
-      </div>
-      <div class="card">
-        <h6>🏆 Top Devices</h6>
-        <ol class="text-muted small mb-0">
-          <li>Heater - 42%</li>
-          <li>Kettle - 25%</li>
-          <li>Microwave - 18%</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-function animateValue(id, start, end, duration) {
-  let obj = document.getElementById(id);
-  if (!obj) return;
-  let range = end - start;
-  let current = start;
-  let increment = end > start ? 1 : -1;
-  let stepTime = Math.abs(Math.floor(duration / range));
-  let timer = setInterval(function () {
-    current += increment;
-    obj.textContent = current + (id === 'monthlyCost' ? ' £' : id === 'carbon' ? ' kg' : ' kWh');
-    if (current == end) clearInterval(timer);
-  }, stepTime);
-}
-
-animateValue("totalUsage", 0, 318, 1500);
-animateValue("monthlyCost", 0, 42, 1500);
-animateValue("carbon", 0, 29, 1500);
-
-new Chart(document.getElementById('usageChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [{
-      label: 'Usage (kWh)',
-      data: [12, 15, 14, 10, 8, 11, 16],
-      backgroundColor: '#1abc9c',
-      borderRadius: 6
-    }]
-  },
-  options: {
-    responsive: true,
-    scales: {
-      y: { beginAtZero: true }
-    }
-  }
-});
-</script>
-
-<script type="module">
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { auth } from './firebase-config.js';
-
-  const greeting = document.getElementById("userGreeting");
-  const signOutBtn = document.getElementById("signOutBtn");
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      const name = user.displayName || user.email.split("@")[0];
-      greeting.textContent = `Hey ${name}! 🌞 Here's your energy update`;
-    } else {
-      window.location.href = "signup.html";
-    }
-  });
-
-  if (signOutBtn) {
-    signOutBtn.addEventListener("click", () => {
-      signOut(auth).then(() => {
-        alert("Signed out!");
-        window.location.href = "signup.html";
-      });
-    });
-  }
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<footer>
-    2025 ©  Energy Dashboard Limited
-</footer>
-<script type="module">
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  import { auth } from './firebase-config.js';
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "signup.html"; // redirect to signup if not logged in
-    }
-  });
-</script>
-
+  <script type="module" src="dashboard.js"></script>
 </body>
 </html>
