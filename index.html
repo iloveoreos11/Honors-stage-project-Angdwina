@@ -45,6 +45,18 @@
       border-bottom: 1px solid #ddd;
       font-weight: 500;
     }
+    .report-link {
+  color: #1abc9c;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.report-link:hover {
+  color: #148f77;
+  text-decoration: underline;
+}
+
   </style>
 </head>
 <body>
@@ -88,7 +100,9 @@
       <ul class="list-unstyled" id="topDevicesList">
         <li>Loading...</li>
       </ul>
-      <a href="reports.html" class="text-primary fw-semibold mt-2 d-inline-block">🔎 See full report →</a>
+
+      <a href="reports.html" class="report-link mt-2 d-inline-block">🔎 See full report →</a>
+
     </div>
 
     <!-- Smart Tip -->

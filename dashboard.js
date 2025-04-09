@@ -5,7 +5,8 @@ import {
   where,
   getDocs,
   doc,
-  getDoc
+  getDoc,
+  limit
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import {
   onAuthStateChanged,
@@ -82,7 +83,7 @@ async function loadDashboardData() {
   totalCarbonEl.innerHTML = `🌍 <strong>Estimated CO₂ Emissions:</strong><br>${totalCO2.toFixed(2)} kg`;
 
   showTopDevices(devices);
-  showSmartTip(devices);
+  showSmartTip();
 }
 
 function showTopDevices(devices) {
@@ -101,25 +102,23 @@ function showTopDevices(devices) {
   }
 }
 
-function showSmartTip(devices) {
-  if (!devices.length) {
-    smartTipEl.textContent = "Add some devices to get helpful energy tips!";
-    return;
-  }
+async function showSmartTip() {
+  try {
+    const tipQuery = query(collection(db, "recommendations"), where("uid", "==", currentUser.uid), limit(1));
+    const snapshot = await getDocs(tipQuery);
 
-  const highUsage = devices.find(d => d.usage > 5 && d.cost > 5);
-  const highest = [...devices].sort((a, b) => b.cost - a.cost)[0];
-
-  if (highUsage) {
-    smartTipEl.textContent = `💡 Try reducing your ${highUsage.name}'s usage from ${highUsage.usage} hrs/day to 4 hrs to save up to £${(highUsage.cost * 0.25).toFixed(2)} monthly.`;
-  } else if (highest) {
-    smartTipEl.textContent = `💡 Your ${highest.name} uses the most energy. Consider reducing its daily usage.`;
-  } else {
-    smartTipEl.textContent = "💡 You're doing great! Keep monitoring your energy use.";
+    if (!snapshot.empty) {
+      const rec = snapshot.docs[0].data();
+      smartTipEl.textContent = `💡 ${rec.message}`;
+    } else {
+      smartTipEl.textContent = "💡 You're doing great! Keep monitoring your energy use.";
+    }
+  } catch (err) {
+    smartTipEl.textContent = "💡 Tip unavailable. Please check back later.";
+    console.error("Error loading smart tip:", err);
   }
 }
 
-// Sign-out logic
 const signOutBtn = document.getElementById("signOutBtn");
 if (signOutBtn) {
   signOutBtn.addEventListener("click", async () => {
