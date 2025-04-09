@@ -58,10 +58,10 @@
         <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
         <li class="nav-item"><a class="nav-link" href="recommendations.html">Recommendations</a></li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-user-circle"></i> Account
           </a>
-          <ul class="dropdown-menu dropdown-menu-end">
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
             <li><a class="dropdown-item" href="settings.html">⚙️ Settings</a></li>
             <li><a class="dropdown-item" href="#" onclick="auth.signOut().then(() => window.location.href='signup.html')">🔓 Sign Out</a></li>
           </ul>
@@ -88,7 +88,6 @@
     </form>
 
     <button class="btn btn-secondary w-100 mt-4" onclick="sendResetEmail()">🔑 Forgot Password?</button>
-    <button class="btn btn-danger w-100 mt-2" onclick="confirmDelete()">🚫 Delete Account</button>
   </div>
 </div>
 
@@ -101,15 +100,11 @@
   import {
     onAuthStateChanged,
     sendPasswordResetEmail,
-    deleteUser
   } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
   import {
     doc,
     setDoc,
     getDoc,
-    getDocs,
-    deleteDoc,
-    collection
   } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
   let currentUser;
@@ -157,35 +152,6 @@
     } catch (err) {
       console.error("Password reset error:", err);
       alert("❌ Couldn't send reset email.");
-    }
-  };
-
-  window.confirmDelete = async function () {
-    if (!currentUser) return alert("You're not signed in.");
-    const confirmDelete = confirm("Are you sure you want to delete your account? This action is permanent.");
-    if (!confirmDelete) return;
-
-    try {
-      const deviceSnapshot = await getDocs(collection(db, "devices"));
-      for (const docSnap of deviceSnapshot.docs) {
-        const data = docSnap.data();
-        if (data.uid === currentUser.uid) {
-          await deleteDoc(docSnap.ref);
-        }
-      }
-
-      await deleteDoc(doc(db, "users", currentUser.uid));
-      await deleteUser(currentUser);
-
-      alert("✅ Your account and all data have been deleted.");
-      window.location.href = "signup.html";
-    } catch (err) {
-      console.error("Delete error:", err);
-      if (err.code === "auth/requires-recent-login") {
-        alert("❗ Please log in again to delete your account.");
-      } else {
-        alert("❌ Something went wrong while deleting your account.");
-      }
     }
   };
 </script>
