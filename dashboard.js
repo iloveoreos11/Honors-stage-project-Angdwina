@@ -49,57 +49,42 @@ onAuthStateChanged(auth, async (user) => {
   loadDashboardData();
 });
 
-
 async function loadDashboardData() {
-    const q = query(collection(db, "devices"), where("uid", "==", currentUser.uid));
-    const snapshot = await getDocs(q);
-    const devices = [];
-  
-    snapshot.forEach(docSnap => {
-      const d = docSnap.data();
-      const usageHours = parseFloat(d.deviceUsage) || 0;  // Default to 0 if invalid
-      const powerWatts = parseFloat(d.devicePower) || 0; // Default to 0 if invalid
-      const multiplier = patternMultipliers[d.usagePattern] ?? 1;
-  
-      const kWh = (powerWatts * usageHours * 30 * multiplier) / 1000;
-      const cost = kWh * costPerKwh;
-      const co2 = kWh * carbonIntensity;
-  
-      devices.push({
-        name: d.deviceName,
-        usage: usageHours,
-        cost: cost,
-        co2: co2,
-        kwh: kWh,
-        pattern: d.usagePattern
-      });
+  const q = query(collection(db, "devices"), where("uid", "==", currentUser.uid));
+  const snapshot = await getDocs(q);
+  const devices = [];
+
+  snapshot.forEach(docSnap => {
+    const d = docSnap.data();
+    const multiplier = patternMultipliers[d.usagePattern] ?? 1;
+    const usageHours = parseFloat(d.deviceUsage) || 0;
+    const powerWatts = parseFloat(d.devicePower) || 0;
+
+    const kWh = (powerWatts * usageHours * 30 * multiplier) / 1000;
+    const cost = kWh * costPerKwh;
+    const co2 = kWh * carbonIntensity;
+
+    devices.push({
+      name: d.deviceName,
+      usage: usageHours,
+      cost: cost,
+      co2: co2,
+      kwh: kWh,
+      pattern: d.usagePattern
     });
-  
-    // Check if devices are populated
-    if (devices.length === 0) {
-      totalEnergyEl.innerHTML = "No devices added yet.";
-      totalCostEl.innerHTML = "No devices added yet.";
-      totalCarbonEl.innerHTML = "No devices added yet.";
-      return;
-    }
-  
-    const totalKwh = devices.reduce((sum, d) => sum + d.kwh, 0);
-    const totalCost = devices.reduce((sum, d) => sum + d.cost, 0);
-    const totalCO2 = devices.reduce((sum, d) => sum + d.co2, 0);
-  
-    totalEnergyEl.innerHTML = `🔌 <strong>Estimated Month’s Energy Usage:</strong><br>${totalKwh.toFixed(2)} kWh`;
-    totalCostEl.innerHTML = `💸 <strong>Estimated Monthly Cost:</strong><br>£${totalCost.toFixed(2)}`;
-    totalCarbonEl.innerHTML = `🌍 <strong>Estimated CO₂ Emissions:</strong><br>${totalCO2.toFixed(2)} kg`;
-  
-    // Update cost per kWh and CO₂ intensity display
-    document.getElementById("costPerKwhDisplay").textContent = `£${costPerKwh.toFixed(2)}`;
-    document.getElementById("carbonIntensityDisplay").textContent = `${carbonIntensity.toFixed(3)} kg/kWh`;
-  
-    showTopDevices(devices);
-    showSmartTip(devices);
+  });
+
+  const totalKwh = devices.reduce((sum, d) => sum + d.kwh, 0);
+  const totalCost = devices.reduce((sum, d) => sum + d.cost, 0);
+  const totalCO2 = devices.reduce((sum, d) => sum + d.co2, 0);
+
+  totalEnergyEl.innerHTML = `🔌 <strong>Estimated Month’s Energy Usage:</strong><br>${totalKwh.toFixed(2)} kWh`;
+  totalCostEl.innerHTML = `💸 <strong>Estimated Monthly Cost:</strong><br>£${totalCost.toFixed(2)}`;
+  totalCarbonEl.innerHTML = `🌍 <strong>Estimated CO₂ Emissions:</strong><br>${totalCO2.toFixed(2)} kg`;
+
+  showTopDevices(devices);
+  showSmartTip(devices);
 }
-
-
 
 function showTopDevices(devices) {
   const sorted = [...devices].sort((a, b) => b.cost - a.cost).slice(0, 3);
