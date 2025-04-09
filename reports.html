@@ -116,11 +116,11 @@
 <footer>
   &copy; 2025 Energy Dashboard. All rights reserved.
 </footer>
-
+<!-- 👇 Keep everything above unchanged -->
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js';
-  import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+  import { collection, getDocs, query, where, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 
   document.getElementById('signOutBtn').addEventListener('click', async (e) => {
     e.preventDefault();
@@ -143,22 +143,25 @@
     }
     authContent.style.display = "block";
 
-    // Your existing report logic will run here
+    // 🔁 GET USER SETTINGS (cost & carbon) FROM Firestore
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const userData = userDoc.exists() ? userDoc.data() : {};
+    const costPerKwh = parseFloat(userData.costPerKwh || 0.34);
+    const carbonIntensity = parseFloat(userData.carbonIntensity || 0.233);
+
     const userDevicesRef = collection(db, "devices");
     const q = query(userDevicesRef, where("uid", "==", user.uid));
     const querySnapshot = await getDocs(q);
 
-    const CO2_FACTOR = 0.233;
     function formatUsage(hours) {
-  const totalMins = Math.round(hours * 60);
-  if (totalMins < 1) return "<1 min/day";
-  const hrs = Math.floor(totalMins / 60);
-  const mins = totalMins % 60;
-
-  if (hrs === 0) return `${mins} min${mins !== 1 ? "s" : ""}/day`;
-  if (mins === 0) return `${hrs} hr${hrs !== 1 ? "s" : ""}/day`;
-  return `${hrs} hr${hrs !== 1 ? "s" : ""} ${mins} min${mins !== 1 ? "s" : ""}/day`;
-}
+      const totalMins = Math.round(hours * 60);
+      if (totalMins < 1) return "<1 min/day";
+      const hrs = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      if (hrs === 0) return `${mins} min${mins !== 1 ? "s" : ""}/day`;
+      if (mins === 0) return `${hrs} hr${hrs !== 1 ? "s" : ""}/day`;
+      return `${hrs} hr${hrs !== 1 ? "s" : ""} ${mins} min${mins !== 1 ? "s" : ""}/day`;
+    }
 
     let totalKwhMonth = 0, totalCostMonth = 0, totalKwhYear = 0, totalCostYear = 0;
     let totalCO2Month = 0, totalCO2Year = 0;
@@ -168,30 +171,26 @@
     querySnapshot.forEach((docSnap) => {
       const device = docSnap.data();
       const name = device.deviceName;
-      
       const power = device.devicePower;
-const usage = device.deviceUsage;
-const pattern = device.usagePattern || "Intermittent";
+      const usage = device.deviceUsage;
+      const pattern = device.usagePattern || "Intermittent";
 
-const patternMultipliers = {
-  "Always On": 0.35,
-  "Standby": 0.15,
-  "Intermittent": 1.0,
-  "Occasional": 0.5,
-  "Seasonal": 0.25
-};
+      const patternMultipliers = {
+        "Always On": 0.35,
+        "Standby": 0.15,
+        "Intermittent": 1.0,
+        "Occasional": 0.5,
+        "Seasonal": 0.25
+      };
 
-const adjustedUsage = usage * (patternMultipliers[pattern] ?? 1.0);
-
-const kWhMonth = (power * adjustedUsage * 30) / 1000;
-
-
-      const costMonth = kWhMonth * (device.costPerKwh || 0.34);
+      const adjustedUsage = usage * (patternMultipliers[pattern] ?? 1.0);
+      const kWhMonth = (power * adjustedUsage * 30) / 1000;
+      const costMonth = kWhMonth * costPerKwh;
       const kWhYear = kWhMonth * 12;
       const costYear = costMonth * 12;
 
-      const co2Month = kWhMonth * CO2_FACTOR;
-      const co2Year = kWhYear * CO2_FACTOR;
+      const co2Month = kWhMonth * carbonIntensity;
+      const co2Year = kWhYear * carbonIntensity;
 
       totalKwhMonth += kWhMonth;
       totalCostMonth += costMonth;
@@ -212,7 +211,6 @@ const kWhMonth = (power * adjustedUsage * 30) / 1000;
         <td>${name}</td>
         <td>${power} W</td>
         <td>${formatUsage(usage)}</td>
-
         <td>${kWhMonth.toFixed(2)} kWh</td>
         <td>£${costMonth.toFixed(2)}</td>
         <td>${kWhYear.toFixed(2)} kWh</td>
@@ -250,36 +248,3 @@ const kWhMonth = (power * adjustedUsage * 30) / 1000;
     `;
   });
 </script>
-
-<script>
-  document.querySelectorAll("th[data-sort]").forEach((header, index) => {
-    let ascending = true;
-    header.style.cursor = "pointer";
-
-    header.addEventListener("click", () => {
-      const type = header.getAttribute("data-sort");
-      const rows = Array.from(document.querySelector("#deviceReportTable").rows);
-
-      rows.sort((a, b) => {
-        let valA = a.cells[index].textContent.trim();
-        let valB = b.cells[index].textContent.trim();
-        if (type === "number") {
-          valA = parseFloat(valA.replace(/[£,]/g, ""));
-          valB = parseFloat(valB.replace(/[£,]/g, ""));
-        }
-        return ascending ? valA - valB : valB - valA;
-      });
-
-      ascending = !ascending;
-      const tbody = document.querySelector("#deviceReportTable");
-      tbody.innerHTML = "";
-      rows.forEach(row => tbody.appendChild(row));
-      document.querySelectorAll(".sort-icon").forEach(i => i.textContent = "");
-      header.querySelector(".sort-icon").textContent = ascending ? "↑" : "↓";
-    });
-  });
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
