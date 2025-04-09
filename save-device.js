@@ -157,6 +157,19 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   
   
+  // 🔥 Format display of usage like "1 hr 30 mins/day" or "5 mins/day"
+  window.formatUsage = function (hours) {
+    const totalMins = Math.round(hours * 60);
+    if (totalMins < 60) return `${totalMins} min${totalMins !== 1 ? "s" : ""}/day`;
+  
+    const hrs = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+  
+    if (mins === 0) return `${hrs} hr${hrs !== 1 ? "s" : ""}/day`;
+    return `${hrs} hr${hrs !== 1 ? "s" : ""} ${mins} min${mins !== 1 ? "s" : ""}/day`;
+  };
+  
+  
 });
 
 function getEmoji(pattern) {
