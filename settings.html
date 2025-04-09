@@ -149,30 +149,6 @@
       statusMsg.className = "text-danger mt-3";
     }
   });
-  window.resetData = async function () {
-  if (!currentUser) return alert("You're not signed in.");
-  const confirmReset = confirm("This will delete all your devices and reset your settings. Continue?");
-  if (!confirmReset) return;
-
-  try {
-    const deviceSnapshot = await getDocs(collection(db, "users", currentUser.uid, "devices"));
-    for (const docSnap of deviceSnapshot.docs) {
-      await deleteDoc(docSnap.ref);
-    }
-
-    await setDoc(doc(db, "users", currentUser.uid), {
-      costPerKwh: null,
-      carbonIntensity: null
-    }, { merge: true });
-
-    alert("✅ Your data has been reset.");
-    document.getElementById("costPerKwh").value = "";
-    document.getElementById("carbonIntensity").value = "";
-  } catch (err) {
-    console.error("🔥 Firestore reset error:", err);
-    alert("❌ Error resetting your data.");
-  }
-}
 
   // 🧼 Reset Data
   window.resetData = async function () {
