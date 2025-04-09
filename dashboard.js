@@ -18,11 +18,9 @@ const totalCarbonEl = document.getElementById("totalCarbon");
 const topDevicesList = document.getElementById("topDevicesList");
 const smartTipEl = document.getElementById("smartTip");
 
-// Default fallback rates
 let costPerKwh = 0.34;
 let carbonIntensity = 0.233;
 
-// Usage pattern multipliers
 const patternMultipliers = {
   "Always On": 1.0,
   "Standby": 0.15,
@@ -39,10 +37,8 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "signup.html";
     return;
   }
-
   currentUser = user;
 
-  // Get user settings
   const userDoc = await getDoc(doc(db, "users", user.uid));
   if (userDoc.exists()) {
     const data = userDoc.data();
@@ -81,9 +77,9 @@ async function loadDashboardData() {
   const totalCost = devices.reduce((sum, d) => sum + d.cost, 0);
   const totalCO2 = devices.reduce((sum, d) => sum + d.co2, 0);
 
-  totalEnergyEl.textContent = `🌡️ Energy: ${totalKwh.toFixed(2)} kWh`;
-  totalCostEl.textContent = `💸 Cost: £${totalCost.toFixed(2)}`;
-  totalCarbonEl.textContent = `🌍 CO₂: ${totalCO2.toFixed(2)} kg`;
+  totalEnergyEl.innerHTML = `🔌 <strong>Estimated Month’s Energy Usage:</strong><br>${totalKwh.toFixed(2)} kWh`;
+  totalCostEl.innerHTML = `💸 <strong>Estimated Monthly Cost:</strong><br>£${totalCost.toFixed(2)}`;
+  totalCarbonEl.innerHTML = `🌍 <strong>Estimated CO₂ Emissions:</strong><br>${totalCO2.toFixed(2)} kg`;
 
   showTopDevices(devices);
   showSmartTip(devices);
@@ -100,7 +96,7 @@ function showTopDevices(devices) {
 
   for (const d of sorted) {
     const li = document.createElement("li");
-    li.innerHTML = `<strong>${d.name}</strong> • ${d.kwh.toFixed(1)} kWh/mo • £${d.cost.toFixed(2)}`;
+    li.innerHTML = `🔥 <strong>${d.name}</strong> • ${d.kwh.toFixed(1)} kWh/mo • £${d.cost.toFixed(2)}`;
     topDevicesList.appendChild(li);
   }
 }
@@ -124,7 +120,10 @@ function showSmartTip(devices) {
 }
 
 // Sign-out logic
-document.getElementById("signOutBtn")?.addEventListener("click", async () => {
-  await signOut(auth);
-  window.location.href = "signup.html";
-});
+const signOutBtn = document.getElementById("signOutBtn");
+if (signOutBtn) {
+  signOutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "signup.html";
+  });
+}
