@@ -113,16 +113,16 @@ window.addEventListener("DOMContentLoaded", () => {
   
     let usage = parseFloat(document.getElementById("deviceUsage").value);
     const inMinutes = document.getElementById("toggleMinutes").checked;
-    if (inMinutes) usage = usage / 60; // ✅ Convert only once here
+    if (inMinutes) usage = usage / 60; // ✅ Convert minutes to hours
   
     const payload = {
-      uid: currentUser.uid,
+      uid: auth.currentUser.uid, // ✅ use this instead of currentUser
       deviceName: document.getElementById("deviceName").value,
       devicePower: parseFloat(document.getElementById("devicePower").value),
       deviceUsage: usage,
       usagePattern: document.getElementById("usagePattern").value,
-      costPerKwh: parseFloat(window.costRate),
-      carbonIntensity: parseFloat(window.carbonRate),
+      costPerKwh: parseFloat(window.costRate ?? 0.34),
+      carbonIntensity: parseFloat(window.carbonRate ?? 0.233),
     };
   
     if (!payload.deviceName || isNaN(payload.devicePower) || isNaN(payload.deviceUsage)) {
@@ -134,17 +134,16 @@ window.addEventListener("DOMContentLoaded", () => {
       const ref = doc(db, "devices", editingDeviceId);
       await updateDoc(ref, payload);
     } else {
-      const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
       await addDoc(collection(db, "devices"), payload);
     }
   
-    form.reset();
-    document.getElementById("editingDeviceId").value = "";
-    document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
-    document.getElementById("formHeader").textContent = "➕ Add a New Device";
-    document.getElementById("deviceSearchInput").value = "";
-    updateEstimates();
-    loadDevices();
+    setTimeout(() => {
+      form.reset();
+      document.getElementById("editingDeviceId").value = "";
+      document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
+      document.getElementById("formHeader").textContent = "➕ Add a New Device";
+      updateEstimates();
+    }, 150);
   });
   
 });
