@@ -249,17 +249,7 @@ onAuthStateChanged(auth, async (user) => {
 
       document.getElementById("deviceName").value = data.deviceName;
       document.getElementById("devicePower").value = data.devicePower;
-
-      const usageInput = document.getElementById("deviceUsage");
-const toggle = document.getElementById("toggleMinutes");
-
-// Convert usage into minutes if toggle is on
-if (toggle.checked) {
-  usageInput.value = (data.deviceUsage * 60).toFixed(0); // show in mins
-} else {
-  usageInput.value = data.deviceUsage.toFixed(2); // show in hours
-}
-
+      document.getElementById("deviceUsage").value = data.deviceUsage;
       document.getElementById("usagePattern").value = data.usagePattern;
       editingDeviceId.value = id;
       submitBtn.textContent = "Update Device";
@@ -386,16 +376,7 @@ const payload = {
   const costDisplay = document.getElementById("costEstimate");
   const carbonDisplay = document.getElementById("carbonEstimate");
   
-  function syncUsageFieldToToggle() {
-  const usageInput = document.getElementById("deviceUsage");
-  const toggle = document.getElementById("toggleMinutes");
-
-  let value = parseFloat(usageInput.value);
-  if (!isNaN(value)) {
-    usageInput.value = toggle.checked ? (value * 60).toFixed(0) : value.toFixed(2);
-  }
-}
-
+  
   function updateEstimates() {
   const power = parseFloat(document.getElementById("devicePower").value);
   const usage = parseFloat(document.getElementById("deviceUsage").value);
