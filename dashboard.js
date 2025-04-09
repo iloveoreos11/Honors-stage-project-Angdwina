@@ -136,9 +136,9 @@ function generateTip(device, usage, power, costPerKwh, co2Factor, pattern = "Int
     "Seasonal": 0.25
   };
 
-  const multiplier = patternMultipliers[pattern] ?? 1.0;
-  const adjustedUsage = usage * multiplier;
-
+  const adjustedUsage = usageHours * (patternMultipliers[d.usagePattern] ?? 1.0);
+  const kWh = (powerWatts * adjustedUsage * 30) / 1000;
+  
   if (pattern === "Always On") {
     return `<strong>${device}</strong> runs continuously (Pattern: Always On). No changes recommended.`;
   }
