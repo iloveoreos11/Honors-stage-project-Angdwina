@@ -39,8 +39,8 @@
       font-size: 1rem;
     }
     .btn-danger { background-color: #e74c3c; }
-    .btn-warning { background-color: #f39c12; color: white; }
     .btn-primary { background-color: #1abc9c; color: white; }
+    .btn-secondary { background-color: #7f8c8d; color: white; }
   </style>
 </head>
 <body>
@@ -87,8 +87,7 @@
       <p id="statusMsg" class="text-center mt-3"></p>
     </form>
 
-    <button class="btn btn-warning w-100 mt-4" onclick="resetData()">♻️ Reset Data</button>
-    <button class="btn btn-secondary w-100 mt-2" onclick="sendResetEmail()">🔑 Forgot Password?</button>
+    <button class="btn btn-secondary w-100 mt-4" onclick="sendResetEmail()">🔑 Forgot Password?</button>
     <button class="btn btn-danger w-100 mt-2" onclick="confirmDelete()">🚫 Delete Account</button>
   </div>
 </div>
@@ -115,7 +114,6 @@
 
   let currentUser;
 
-  // Auth check
   onAuthStateChanged(auth, async (user) => {
     if (!user) return window.location.href = "signup.html";
     currentUser = user;
@@ -128,7 +126,6 @@
     }
   });
 
-  // Save settings
   document.getElementById("settingsForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentUser) return;
@@ -151,7 +148,6 @@
     }
   });
 
-  // Forgot password
   window.sendResetEmail = async function () {
     if (!currentUser) return alert("You're not signed in.");
 
@@ -164,14 +160,12 @@
     }
   };
 
-  // Delete account (corrected)
   window.confirmDelete = async function () {
     if (!currentUser) return alert("You're not signed in.");
     const confirmDelete = confirm("Are you sure you want to delete your account? This action is permanent.");
     if (!confirmDelete) return;
 
     try {
-      // Delete all top-level devices owned by this user
       const deviceSnapshot = await getDocs(collection(db, "devices"));
       for (const docSnap of deviceSnapshot.docs) {
         const data = docSnap.data();
@@ -192,35 +186,6 @@
       } else {
         alert("❌ Something went wrong while deleting your account.");
       }
-    }
-  };
-
-  // Optional: Reset Data (safe to remove if not needed)
-  window.resetData = async function () {
-    if (!currentUser) return alert("You're not signed in.");
-    const confirmReset = confirm("This will delete all your devices and reset your settings. Continue?");
-    if (!confirmReset) return;
-
-    try {
-      const deviceSnapshot = await getDocs(collection(db, "devices"));
-      for (const docSnap of deviceSnapshot.docs) {
-        const data = docSnap.data();
-        if (data.uid === currentUser.uid) {
-          await deleteDoc(docSnap.ref);
-        }
-      }
-
-      await setDoc(doc(db, "users", currentUser.uid), {
-        costPerKwh: null,
-        carbonIntensity: null
-      }, { merge: true });
-
-      alert("✅ Your data has been reset.");
-      document.getElementById("costPerKwh").value = "";
-      document.getElementById("carbonIntensity").value = "";
-    } catch (err) {
-      console.error("🔥 Reset error:", err.message, err);
-      alert("❌ Error: " + err.message);
     }
   };
 </script>
