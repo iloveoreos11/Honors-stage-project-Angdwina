@@ -96,6 +96,7 @@
 <footer>
   2025 © Energy Dashboard Limited
 </footer>
+
 <script type="module">
   import { auth, db } from './firebase-config.js';
   import {
@@ -114,7 +115,7 @@
 
   let currentUser;
 
-  // 🔐 Auth check
+  // Auth check
   onAuthStateChanged(auth, async (user) => {
     if (!user) return window.location.href = "signup.html";
     currentUser = user;
@@ -127,7 +128,7 @@
     }
   });
 
-  // 💾 Save settings
+  // Save settings
   document.getElementById("settingsForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentUser) return;
@@ -150,38 +151,7 @@
     }
   });
 
-  // 🧼 Reset Data
-  window.resetData = async function () {
-  if (!currentUser) return alert("You're not signed in.");
-  const confirmReset = confirm("This will delete all your devices and reset your settings. Continue?");
-  if (!confirmReset) return;
-
-  try {
-    // ✅ Delete all top-level devices with current user's UID
-    const deviceSnapshot = await getDocs(collection(db, "devices"));
-    for (const docSnap of deviceSnapshot.docs) {
-      const data = docSnap.data();
-      if (data.uid === currentUser.uid) {
-        await deleteDoc(docSnap.ref);
-      }
-    }
-
-    // ✅ Reset cost/CO2 in user's profile
-    await setDoc(doc(db, "users", currentUser.uid), {
-      costPerKwh: null,
-      carbonIntensity: null
-    }, { merge: true });
-
-    alert("✅ Your data has been reset.");
-    document.getElementById("costPerKwh").value = "";
-    document.getElementById("carbonIntensity").value = "";
-  } catch (err) {
-    console.error("🔥 Reset error:", err.message, err);
-    alert("❌ Error: " + err.message);
-  }
-};
-
-  // 🔐 Forgot Password
+  // Forgot password
   window.sendResetEmail = async function () {
     if (!currentUser) return alert("You're not signed in.");
 
@@ -194,35 +164,67 @@
     }
   };
 
-  // 🗑️ Delete Account
+  // Delete account (corrected)
   window.confirmDelete = async function () {
     if (!currentUser) return alert("You're not signed in.");
     const confirmDelete = confirm("Are you sure you want to delete your account? This action is permanent.");
     if (!confirmDelete) return;
 
     try {
-      const deviceSnapshot = await getDocs(collection(db, "users", currentUser.uid, "devices"));
+      // Delete all top-level devices owned by this user
+      const deviceSnapshot = await getDocs(collection(db, "devices"));
       for (const docSnap of deviceSnapshot.docs) {
-        await deleteDoc(docSnap.ref);
+        const data = docSnap.data();
+        if (data.uid === currentUser.uid) {
+          await deleteDoc(docSnap.ref);
+        }
       }
 
       await deleteDoc(doc(db, "users", currentUser.uid));
       await deleteUser(currentUser);
 
-      alert("✅ Your account has been deleted.");
+      alert("✅ Your account and all data have been deleted.");
       window.location.href = "signup.html";
     } catch (err) {
       console.error("Delete error:", err);
       if (err.code === "auth/requires-recent-login") {
-        alert("❗ Please sign in again to delete your account.");
+        alert("❗ Please log in again to delete your account.");
       } else {
         alert("❌ Something went wrong while deleting your account.");
       }
     }
   };
+
+  // Optional: Reset Data (safe to remove if not needed)
+  window.resetData = async function () {
+    if (!currentUser) return alert("You're not signed in.");
+    const confirmReset = confirm("This will delete all your devices and reset your settings. Continue?");
+    if (!confirmReset) return;
+
+    try {
+      const deviceSnapshot = await getDocs(collection(db, "devices"));
+      for (const docSnap of deviceSnapshot.docs) {
+        const data = docSnap.data();
+        if (data.uid === currentUser.uid) {
+          await deleteDoc(docSnap.ref);
+        }
+      }
+
+      await setDoc(doc(db, "users", currentUser.uid), {
+        costPerKwh: null,
+        carbonIntensity: null
+      }, { merge: true });
+
+      alert("✅ Your data has been reset.");
+      document.getElementById("costPerKwh").value = "";
+      document.getElementById("carbonIntensity").value = "";
+    } catch (err) {
+      console.error("🔥 Reset error:", err.message, err);
+      alert("❌ Error: " + err.message);
+    }
+  };
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
