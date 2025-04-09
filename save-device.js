@@ -113,16 +113,25 @@ window.addEventListener("DOMContentLoaded", () => {
   
     let usage = parseFloat(document.getElementById("deviceUsage").value);
     const inMinutes = document.getElementById("toggleMinutes").checked;
-    if (inMinutes) usage = usage / 60; // ✅ Convert minutes to hours
+    if (inMinutes) usage = usage / 60; // ✅ Convert only once here
+  
+    // ✨ Round nicely for display
+    let roundedUsage;
+    if (usage < 1) {
+      const minutes = Math.round(usage * 60);
+      roundedUsage = parseFloat((minutes / 60).toFixed(4)); // Store with 4 decimal places for accuracy
+    } else {
+      roundedUsage = parseFloat(usage.toFixed(2));
+    }
   
     const payload = {
-      uid: auth.currentUser.uid, // ✅ use this instead of currentUser
+      uid: auth.currentUser.uid,
       deviceName: document.getElementById("deviceName").value,
       devicePower: parseFloat(document.getElementById("devicePower").value),
-      deviceUsage: usage,
+      deviceUsage: roundedUsage,
       usagePattern: document.getElementById("usagePattern").value,
-      costPerKwh: parseFloat(window.costRate ?? 0.34),
-      carbonIntensity: parseFloat(window.carbonRate ?? 0.233),
+      costPerKwh: parseFloat(window.costRate),
+      carbonIntensity: parseFloat(window.carbonRate),
     };
   
     if (!payload.deviceName || isNaN(payload.devicePower) || isNaN(payload.deviceUsage)) {
@@ -134,17 +143,19 @@ window.addEventListener("DOMContentLoaded", () => {
       const ref = doc(db, "devices", editingDeviceId);
       await updateDoc(ref, payload);
     } else {
+      const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
       await addDoc(collection(db, "devices"), payload);
     }
   
-    setTimeout(() => {
-      form.reset();
-      document.getElementById("editingDeviceId").value = "";
-      document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
-      document.getElementById("formHeader").textContent = "➕ Add a New Device";
-      updateEstimates();
-    }, 150);
+    form.reset();
+    document.getElementById("editingDeviceId").value = "";
+    document.querySelector("#deviceForm button[type='submit']").textContent = "Add Device";
+    document.getElementById("formHeader").textContent = "➕ Add a New Device";
+    document.getElementById("deviceSearchInput").value = "";
+    updateEstimates();
+    loadDevices();
   });
+  
   
 });
 
