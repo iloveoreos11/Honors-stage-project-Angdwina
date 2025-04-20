@@ -144,8 +144,9 @@ window.addEventListener("DOMContentLoaded", () => {
       const ref = doc(db, "devices", editingDeviceId);
       await updateDoc(ref, payload);
     } else {
-      const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
       await addDoc(collection(db, "devices"), payload);
+
+      
     }
   
     form.reset();
