@@ -372,6 +372,8 @@ onAuthStateChanged(auth, async (user) => {
 
   powerInput.addEventListener("input", updateEstimates);
   usageInput.addEventListener("input", updateEstimates);
+  document.getElementById("usagePattern").addEventListener("change", updateEstimates);
+
   onAuthStateChanged(auth, async (user) => {
     if (!user) return window.location.href = "signup.html";
     const userDoc = await getDoc(doc(db, "users", user.uid));
