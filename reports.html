@@ -277,5 +277,48 @@
 
 <!-- Optional: Add Bootstrap's JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const getCellValue = (row, index) => {
+    const cell = row.children[index];
+    const value = cell?.innerText || '';
+    const isNumber = !isNaN(value.replace(/[^0-9.]/g, ''));
+    return isNumber ? parseFloat(value.replace(/[^0-9.]/g, '')) : value.toLowerCase();
+  };
+
+  const sortTable = (index, type) => {
+    const table = document.querySelector("tbody#deviceReportTable");
+    const rows = Array.from(table.querySelectorAll("tr"));
+    const th = document.querySelectorAll("th")[index];
+
+    const direction = th.dataset.sortDir === "asc" ? "desc" : "asc";
+    th.dataset.sortDir = direction;
+
+    rows.sort((a, b) => {
+      const valA = getCellValue(a, index);
+      const valB = getCellValue(b, index);
+
+      if (type === "number") {
+        return direction === "asc" ? valA - valB : valB - valA;
+      } else {
+        return direction === "asc"
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      }
+    });
+
+    // Clear current rows and reappend in new order
+    rows.forEach(row => table.appendChild(row));
+  };
+
+  // Attach click listeners to sortable headers
+  document.querySelectorAll("th[data-sort]").forEach((th, index) => {
+    th.style.cursor = "pointer";
+    th.addEventListener("click", () => {
+      const sortType = th.getAttribute("data-sort");
+      sortTable(index, sortType);
+    });
+  });
+</script>
+
 </body>
 </html>
