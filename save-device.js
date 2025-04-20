@@ -144,6 +144,7 @@ window.addEventListener("DOMContentLoaded", () => {
       const ref = doc(db, "devices", editingDeviceId);
       await updateDoc(ref, payload);
     } else {
+      console.log("Saving new device:", payload);
       await addDoc(collection(db, "devices"), payload);
 
       
@@ -155,7 +156,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formHeader").textContent = "➕ Add a New Device";
     document.getElementById("deviceSearchInput").value = "";
     updateEstimates();
-    loadDevices();
+    //loadDevices();
   });
   
   
