@@ -334,7 +334,6 @@ onAuthStateChanged(auth, async (user) => {
   const costDisplay = document.getElementById("costEstimate");
   const carbonDisplay = document.getElementById("carbonEstimate");
   
-  
   function updateEstimates() {
   const power = parseFloat(document.getElementById("devicePower").value);
   const usage = parseFloat(document.getElementById("deviceUsage").value);
@@ -342,13 +341,12 @@ onAuthStateChanged(auth, async (user) => {
 
   // Define multipliers based on usage pattern
   const patternMultipliers = {
-  "Always On": 0.35,     // Simulates fridge cycling
-  "Standby": 0.15,       // Low usage (between 0.1 and 0.2)
-  "Intermittent": 1.0,   // Use actual input
-  "Occasional": 0.5,     // Halve the time
-  "Seasonal": 0.25        // We'll handle yearly adjustment separately if needed
-};
-
+    "Always On": 0.35,     // Simulates fridge cycling
+    "Standby": 0.15,       // Low usage (between 0.1 and 0.2)
+    "Intermittent": 1.0,   // Use actual input
+    "Occasional": 0.5,     // Halve the time
+    "Seasonal": 0.25       // We'll handle yearly adjustment separately if needed
+  };
 
   const multiplier = patternMultipliers[pattern] ?? 1;
 
@@ -361,6 +359,7 @@ onAuthStateChanged(auth, async (user) => {
     const cost = kWhPerMonth * window.costRate;
     const carbon = kWhPerMonth * window.carbonRate;
 
+    // Update the DOM to display the estimates
     document.getElementById("costEstimate").textContent = "£" + cost.toFixed(2);
     document.getElementById("carbonEstimate").textContent = carbon.toFixed(2) + " kg/month";
   } else {
@@ -368,6 +367,8 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("carbonEstimate").textContent = "0.00 kg/month";
   }
 }
+
+  
 
 
   powerInput.addEventListener("input", updateEstimates);
