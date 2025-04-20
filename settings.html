@@ -77,11 +77,11 @@
     <form id="settingsForm">
       <div class="mb-3">
         <label for="costPerKwh" class="form-label">Cost per kWh (£)</label>
-        <input type="number" id="costPerKwh" step="0.0001" min="0" class="form-control" placeholder="e.g. 0.34" required />
+        <input type="text" id="costPerKwh" step="0.0001" min="0" class="form-control" placeholder="e.g. 0.34" required />
       </div>
       <div class="mb-3">
         <label for="carbonIntensity" class="form-label">CO₂ Intensity (kg per kWh)</label>
-        <input type="number" id="carbonIntensity" step="0.0001" min="0" class="form-control" placeholder="e.g. 0.233" required />
+        <input type="text" id="carbonIntensity" step="0.0001" min="0" class="form-control" placeholder="e.g. 0.233" required />
       </div>
       <button type="submit" class="btn btn-primary w-100">Save Settings</button>
       <p id="statusMsg" class="text-center mt-3"></p>
@@ -125,9 +125,16 @@
     e.preventDefault();
     if (!currentUser) return;
 
-    const cost = parseFloat(document.getElementById("costPerKwh").value);
-    const carbon = parseFloat(document.getElementById("carbonIntensity").value);
-    const statusMsg = document.getElementById("statusMsg");
+const cost = parseFloat(document.getElementById("costPerKwh").value.trim());
+const carbon = parseFloat(document.getElementById("carbonIntensity").value.trim());
+const statusMsg = document.getElementById("statusMsg");
+
+if (isNaN(cost) || isNaN(carbon) || cost < 0 || carbon < 0) {
+  statusMsg.textContent = "❌ Enter valid numbers only (like 0.27)";
+  statusMsg.className = "text-danger mt-3";
+  return;
+}
+
 
     try {
       await setDoc(doc(db, "users", currentUser.uid), {
