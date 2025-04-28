@@ -1,8 +1,7 @@
-
 // --- Unit Test: Cost Calculation ---
 function calculateMonthlyCost(powerWatts, usageHoursPerDay, costPerKwh) {
-    const powerKw = powerWatts / 1000; // Convert watts to kilowatts
-    return powerKw * usageHoursPerDay * 30 * costPerKwh; // 30 days per month
+    const powerKw = powerWatts / 1000;
+    return powerKw * usageHoursPerDay * 30 * costPerKwh;
 }
 
 function testCalculateMonthlyCost() {
@@ -46,7 +45,3 @@ function runAllTests() {
 }
 
 runAllTests();
-
-// =============================
-// End of test.js
-// =============================
