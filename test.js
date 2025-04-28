@@ -7,7 +7,7 @@ function calculateMonthlyCost(powerWatts, usageHoursPerDay, costPerKwh) {
 function testCalculateMonthlyCost() {
     const result = calculateMonthlyCost(1000, 2, 0.30);
     const expected = 18.00;
-    console.log(result.toFixed(2) == expected.toFixed(2) ? "✅ Cost Calculation Test Passed" : "❌ Cost Calculation Test Failed");
+    console.log(Math.abs(result - expected) < 0.01 ? "✅ Cost Calculation Test Passed" : "❌ Cost Calculation Test Failed (Got " + result.toFixed(2) + ")");
 }
 
 // --- Unit Test: CO2 Emission Calculation ---
@@ -18,7 +18,7 @@ function calculateMonthlyCO2(kwhPerMonth, co2Intensity) {
 function testCalculateMonthlyCO2() {
     const result = calculateMonthlyCO2(100, 0.233);
     const expected = 23.3;
-    console.log(result.toFixed(2) == expected.toFixed(2) ? "✅ CO₂ Emission Calculation Test Passed" : "❌ CO₂ Emission Calculation Test Failed");
+    console.log(Math.abs(result - expected) < 0.01 ? "✅ CO₂ Emission Calculation Test Passed" : "❌ CO₂ Emission Calculation Test Failed (Got " + result.toFixed(2) + ")");
 }
 
 // --- Unit Test: Form Validation ---
